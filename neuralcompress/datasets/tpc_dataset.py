@@ -5,13 +5,7 @@ from pathlib import Path
 import numpy as np
 import sys
 
-util_path = '/sdcc/u/yhuang2/PROJs/EICLDRD/utils'
-assert Path(util_path).exists()
-if util_path not in sys.path:
-    sys.path.append(util_path)
-
-from text_style import text_style
-ts = text_style()
+from ..utils.text_style import text_style
 
 class dataset_TPC2d(Dataset):
     """
@@ -19,6 +13,7 @@ class dataset_TPC2d(Dataset):
     """
     def __init__(self, split_path, framedata_path, section_along=2, batch_size=1, shuffle=True, maximum=None):
         super(dataset_TPC2d, self).__init__()
+        ts = text_style()
         # Parameter setting and validity check
         split_path = Path(split_path)
         assert split_path.exists(), \
@@ -96,6 +91,7 @@ class dataset_TPC3d(Dataset):
         super(dataset_TPC3d, self).__init__()
         # Parameter setting and validity check
         split_path = Path(split_path)
+        ts = text_style()
         assert split_path.exists(), \
             f"{ts.ERROR}The input split path, {split_path}, does not exists!{ts.ENDC}"
         

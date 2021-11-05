@@ -10,23 +10,15 @@ import dill
 from time import time
 import seaborn as sns
 import argparse
-
-# dataloading apparatus
-from dataset_TPC import dataset_TPC3d
-from network_design import network_design
-from visualize import plot_losses, plot_histograms, plot_histogram_2d, plot_errors, plot_mse, visualize_2d, visualize_3d
-
 import torch
 import torch.nn as nn
+
+# dataloading apparatus
+from neuralcompress.datasets import dataset_TPC3d
+from neuralcompress.utils import network_design, plot_losses, plot_histograms, plot_histogram_2d, plot_errors, plot_mse, visualize_2d, visualize_3d
+from neuralcompress.models import CNNAE
+
 torch.cuda.is_available()
-
-# Load model
-model_path = '/sdcc/u/yhuang2/PROJs/EICLDRD/models'
-assert Path(model_path).exists()
-if model_path not in sys.path:
-	sys.path.append(model_path)
-from model_residual import CNNAE
-
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
