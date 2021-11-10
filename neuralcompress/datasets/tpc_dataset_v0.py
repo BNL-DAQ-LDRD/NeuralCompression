@@ -21,6 +21,9 @@ class DatasetTPC3d(Dataset):
         split_path,
         frame_path,
         split='train',
+        shuffle=False,
+        rng_random_state=None,
+        max_size=None
     ):
         super().__init__()
 
@@ -41,14 +44,23 @@ class DatasetTPC3d(Dataset):
         with open(split_fname, 'r') as file_handle:
             file_names = file_handle.read().splitlines()
             self.file_list = [frame_path/f for f in file_names]
+        if shuffle:
+            rng = np.random.RandomState(rng_random_state)
+            rng.shuffle(self.file_list)
+
+        if max_size:
+            self.max_size = min(max_size, len(self.file_list))
+            self.file_list = self.file_list[:self.max_size]
+        else:
+            self.max_size = len(self.file_list)
 
 
     def __len__(self):
-        return len(self.file_list)
+        return self.max_size
 
 
     def __getitem__(self, idx):
-        fname = self.file_list[idx]
+        fname = self.file_list[idx % self.max_size]
         datum = np.expand_dims(np.float32(np.load(fname)), 0)
         return datum
 
@@ -58,6 +70,9 @@ class DatasetTPC3d(Dataset):
 #     data_root,
 #     layer_group,
 #     batch_size,
+#     shuffle=False,
+#     rng_random_state=None,
+#     max_size=None
 # ):
 #     """
 #     This is main of dataset_tpc.py.
@@ -69,20 +84,32 @@ class DatasetTPC3d(Dataset):
 #     frame_path = Path(data_root)/f'highest_framedata_3d/{layer_group}/'
 #
 #     # datasets
+#     print('\ntrain dataset')
 #     dataset_train = DatasetTPC3d(
 #         split_path,
 #         frame_path,
 #         split='train',
+#         shuffle=shuffle,
+#         rng_random_state=rng_random_state,
+#         max_size=max_size
 #     )
+#     print('\nvalid dataset')
 #     dataset_valid = DatasetTPC3d(
 #         split_path,
 #         frame_path,
 #         split='valid',
+#         shuffle=shuffle,
+#         rng_random_state=rng_random_state,
+#         max_size=max_size
 #     )
+#     print('\ntest dataset')
 #     dataset_test  = DatasetTPC3d(
 #         split_path,
 #         frame_path,
 #         split='test',
+#         shuffle=shuffle,
+#         rng_random_state=rng_random_state,
+#         max_size=max_size
 #     )
 #
 #     # dataloaders
@@ -97,6 +124,9 @@ class DatasetTPC3d(Dataset):
 # if __name__ == '__main__':
 #     main(
 #         '/data/datasets/sphenix/',
-#         'outer',
-#         32,
+#         'middle',
+#         100,
+#         shuffle=True,
+#         rng_random_state=1,
+#         max_size=300
 #     )
