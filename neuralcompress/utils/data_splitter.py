@@ -32,6 +32,7 @@ def split(
     ratios=(8, 1, 1),
     shuffle=True,
     rng_random_state=None,
+    max_sizes=None
 ):
 
     """
@@ -43,6 +44,13 @@ def split(
         - output_dir: output dir that contains the splits
             (train.txt, valid.txt, and text.txt).
 
+        - shuffle (optional): whether to shuffle
+            the data files before splitting.
+            Default is True.
+
+        - rnd_random_state (optional): seed for numpy random number generator.
+            Default is None.
+
         - ratios (optional): 3 integers indicating the
             train : valid : test ratios.
             For example, suppose we have 10000 npy files
@@ -51,8 +59,9 @@ def split(
             1000 validation examples, and 1000 test examples.
             Default is (8, 1, 1).
 
-        - rnd_random_state (optional): seed for numpy random number generator.
-            default is None.
+        - max_sizes(optional): if not None, three integers that upper bound
+            the number examples in each split.
+            Default is None.
     """
 
     input_dir = Path(input_dir)
@@ -74,9 +83,33 @@ def split(
     train_end = int(num_files * ratios[0] / total)
     valid_end = int(num_files * (ratios[0] + ratios[1]) / total)
 
-    create_subset(output_dir, file_list, 'train', range(train_end))
-    create_subset(output_dir, file_list, 'valid', range(train_end, valid_end))
-    create_subset(output_dir, file_list, 'test',  range(valid_end, num_files))
+    if max_sizes:
+        train_num = min(train_end, max_sizes[0])
+        valid_num = min(valid_end - train_end, max_sizes[1])
+        test_num  = min(num_files - valid_end, max_sizes[2])
+    else:
+        train_num = train_end
+        valid_num = valid_end - train_end
+        test_num  = num_files - valid_end
+
+    create_subset(
+        output_dir,
+        file_list,
+        'train',
+        range(train_num)
+    )
+    create_subset(
+        output_dir,
+        file_list,
+        'valid',
+        range(train_end, train_end + valid_num)
+    )
+    create_subset(
+        output_dir,
+        file_list,
+        'test',
+        range(valid_end, valid_end + test_num)
+    )
 
 
 def main():
@@ -124,8 +157,18 @@ def main():
         default=[8, 1, 1],
         help='Three space-separated integers, (train : valid : test) ratios.'
     )
+    parser.add_argument(
+        '-m',
+        '--max_sizes',
+        nargs=3,
+        type=int,
+        default=None,
+        help='Three space-separated integers upper bound the number of \
+            examples in the train, validation, and test splits.'
+    )
     args = parser.parse_args()
 
+    print(args.shuffle)
 
     split(
         input_dir        = args.input_dir,
@@ -133,6 +176,7 @@ def main():
         shuffle          = args.shuffle,
         rng_random_state = args.rng_random_state,
         ratios           = args.ratios,
+        max_sizes        = args.max_sizes,
     )
 
 
