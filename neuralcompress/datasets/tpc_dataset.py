@@ -8,7 +8,6 @@ from pathlib import Path
 import numpy as np
 
 from torch.utils.data import Dataset
-# from torch.utils.data import DataLoader
 
 
 class DatasetTPC3d(Dataset):
