@@ -1,4 +1,6 @@
 # `data_extractor_crop.py`:
+- Goal: cut the entire layer group into non-overlapping sections
+    for example: 12 sectors along the azimuth and 2 along the z-direction.
 
 ## Usage examples:
 
