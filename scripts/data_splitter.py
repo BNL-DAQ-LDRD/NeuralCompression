@@ -72,9 +72,7 @@ def split(
     else:
         split_path = data_path
 
-    total = 0
-    for ratio in ratios.values():
-        total += ratio
+    total = sum(ratio for ratio in ratios.values())
 
     if not ratios:
         ratios = {'train': 8, 'test': 2}
