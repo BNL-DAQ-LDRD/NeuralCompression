@@ -82,10 +82,8 @@ def get_dataloader(
 #     """
 #     Test with TPC dataset API.
 #     """
-#     import sys
-#     sys.path.append('/home/yhuang2/PROJs/NeuralCompression/neuralcompress/')
 #     from pathlib import Path
-#     from datasets.tpc_dataset import DatasetTPC3d
+#     from neuralcompress.datasets.tpc_dataset import DatasetTPC3d
 #
 #     batch_size = 32
 #     root_folder = Path('/data/datasets/sphenix/highest_framedata_3d/outer/')
@@ -117,4 +115,4 @@ def get_dataloader(
 
 if __name__ == "__main__":
     print('This is main of data_loader.py')
-    # test()
+    test()
