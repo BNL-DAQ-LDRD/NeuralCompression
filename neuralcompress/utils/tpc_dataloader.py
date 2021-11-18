@@ -1,10 +1,11 @@
 """
+Get TPC train, valid, and test dataloaders
 """
 #! /usr/bin/env python
-import torch
-from torch.utils.data import DataLoader, Subset
-from neuralcompress.dataset.tpc_dataset import DatasetTPC3d
-from neuralcompress.utils.dataset_utils import (
+from pathlib import Path
+from torch.utils.data import DataLoader
+from datasets.tpc_dataset import DatasetTPC3d
+from utils.dataset_utils import (
     sample_dataset,
     split_dataset
 )
@@ -12,39 +13,41 @@ from neuralcompress.utils.dataset_utils import (
 def get_tpc_test_dataloader(
     test_manifest,
     batch_size,
-    length=None,
+    sample_sz=None,
     shuffle=True,
     seed=None
 ):
     """
+    Get TPC test dataloader
     """
     dataset = DatasetTPC3d(test_manifest)
-    dataset = sample_dataset(dataset, length, shuffle, seed)
+    dataset = sample_dataset(dataset, sample_sz, shuffle, seed)
     return DataLoader(dataset, batch_size=batch_size)
 
-
+# pylint: disable=too-many-arguments
 def get_tpc_train_valid_dataloaders(
     train_manifest,
     batch_size,
-    train_length=None,
-    valid_length=None,
+    train_sz=None,
+    valid_sz=None,
     valid_ratio=None,
     shuffle=True,
     seed=None
 ):
     """
+    Get TPC train and valid dataloaders
     """
     assert (
-        (train_length != None and valid_length != None) and
-        (train_length == None and valid_length == None) and valid_ratio != None
-    ), f'give train length and valid_length or just valid_ratio'
+        (train_sz is not None and valid_sz is not None) and
+        (train_sz is None and valid_sz is None) and valid_ratio is not None
+    ), 'give train length and valid_sz or just valid_ratio'
 
     dataset = DatasetTPC3d(train_manifest)
 
-    if train_length is not None:
+    if train_sz is not None:
         train_dataset, valid_dataset = split_dataset(
             dataset,
-            lengths=[train_length, valid_length],
+            sizes=[train_sz, valid_sz],
             shuffle=shuffle,
             seed=seed
         )
@@ -61,29 +64,33 @@ def get_tpc_train_valid_dataloaders(
     return train_loader, valid_loader
 
 
+# pylint: disable=too-many-arguments
 def get_tpc_dataloaders(
     manifest_path,
     batch_size,
-    train_length=None,
-    valid_length=None,
+    train_sz=None,
+    valid_sz=None,
     valid_ratio=None,
-    test_length=None,
+    test_sz=None,
     shuffle=True,
     seed=None
 ):
+    """
+    Get TPC train, valid, and test dataloaders
+    """
     test_manifest = Path(manifest_path)/'test.txt'
-    test_loader = get_tpc_test_loader(
+    test_loader = get_tpc_test_dataloader(
         test_manifest,
         batch_size,
-        test_length,
+        test_sz,
         shuffle,
         seed)
     train_manifest = Path(manifest_path)/'train.txt'
-    train_loader, valid_loader = get_tpc_train_valid_loaders(
+    train_loader, valid_loader = get_tpc_train_valid_dataloaders(
         train_manifest,
         batch_size,
-        train_length,
-        valid_length,
+        train_sz,
+        valid_sz,
         valid_ratio,
         shuffle,
         seed
