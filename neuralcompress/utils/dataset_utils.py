@@ -93,7 +93,7 @@ def split(
         assert all(fraction >= 0 for fraction in fractions)
         cumulative_fractions = np.cumsum(fractions)
         cumulative_fractions /= cumulative_fractions[-1]
-        cumulative_sizes = map(int, cumulative_fractions * total_sz)
+        cumulative_sizes = list(map(int, cumulative_fractions * total_sz))
 
     indices = sample(total_sz, cumulative_sizes[-1], shuffle, seed)
 

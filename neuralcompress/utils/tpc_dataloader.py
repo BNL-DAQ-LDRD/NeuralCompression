@@ -4,8 +4,8 @@ Get TPC train, valid, and test dataloaders
 #! /usr/bin/env python
 from pathlib import Path
 from torch.utils.data import DataLoader
-from datasets.tpc_dataset import DatasetTPC3d
-from utils.dataset_utils import (
+from neuralcompress.datasets.tpc_dataset import DatasetTPC3d
+from neuralcompress.utils.dataset_utils import (
     sample_dataset,
     split_dataset
 )
@@ -13,7 +13,7 @@ from utils.dataset_utils import (
 def get_tpc_test_dataloader(
     test_manifest,
     batch_size,
-    sample_sz=None,
+    test_sz=None,
     shuffle=True,
     seed=None
 ):
@@ -21,7 +21,7 @@ def get_tpc_test_dataloader(
     Get TPC test dataloader
     """
     dataset = DatasetTPC3d(test_manifest)
-    dataset = sample_dataset(dataset, sample_sz, shuffle, seed)
+    dataset = sample_dataset(dataset, test_sz, shuffle, seed)
     return DataLoader(dataset, batch_size=batch_size)
 
 # pylint: disable=too-many-arguments
@@ -37,10 +37,11 @@ def get_tpc_train_valid_dataloaders(
     """
     Get TPC train and valid dataloaders
     """
+
     assert (
-        (train_sz is not None and valid_sz is not None) and
-        (train_sz is None and valid_sz is None) and valid_ratio is not None
-    ), 'give train length and valid_sz or just valid_ratio'
+        (train_sz is not None and valid_sz is not None) or
+        (train_sz is None and valid_sz is None and valid_ratio is not None)
+    ), 'give train size and valid size or just valid ratio'
 
     dataset = DatasetTPC3d(train_manifest)
 
@@ -79,20 +80,26 @@ def get_tpc_dataloaders(
     Get TPC train, valid, and test dataloaders
     """
     test_manifest = Path(manifest_path)/'test.txt'
+    assert test_manifest.exists(), \
+        f'{test_manifest} does not exist.'
     test_loader = get_tpc_test_dataloader(
         test_manifest,
         batch_size,
-        test_sz,
-        shuffle,
-        seed)
+        test_sz=test_sz,
+        shuffle=shuffle,
+        seed=seed
+    )
+
     train_manifest = Path(manifest_path)/'train.txt'
+    assert test_manifest.exists(), \
+        f'{train_manifest} does not exist.'
     train_loader, valid_loader = get_tpc_train_valid_dataloaders(
         train_manifest,
         batch_size,
-        train_sz,
-        valid_sz,
-        valid_ratio,
-        shuffle,
-        seed
+        train_sz=train_sz,
+        valid_sz=valid_sz,
+        valid_ratio=valid_ratio,
+        shuffle=shuffle,
+        seed=seed
     )
     return train_loader, valid_loader, test_loader

@@ -14,7 +14,7 @@ class DatasetTPC3d(Dataset):
     """
     TPC 3d Dataset
     """
-    def __init__(self,split_fname):
+    def __init__(self, split_fname):
         super().__init__()
 
         # validity check
