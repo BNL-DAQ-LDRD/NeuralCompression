@@ -13,11 +13,9 @@
         manifest. Do not shuffle the dataset.
 """
 import argparse
-
-import sys
-
 from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
 
+#pylint: disable=too-many-arguments
 def test(
     manifest_path,
     batch_size,
@@ -127,8 +125,7 @@ def get_arguments():
         default=None,
         help='random seed.'
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_arguments()
