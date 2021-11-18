@@ -1,6 +1,7 @@
 # Test the TPC dataloader function
 Use `test_tpc_dataloader.py` to test the working of TPC dataloader
 ## Usage examples:
+> Please run inside the test folder. Make sure not to drop the `-m`.
 1. `python -m test_tpc_dataloader -p [manifest_path] -b 32 --train_sz 32 --valid_sz 32 --test_sz 32  --shuffle --seed 0`
     > Load 32 train examples, 32 valid examples, 32 test examples.
     Shuffle the dataset and seed the random number generator with 0.
