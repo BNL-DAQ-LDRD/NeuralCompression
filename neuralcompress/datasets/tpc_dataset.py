@@ -14,16 +14,21 @@ class DatasetTPC3d(Dataset):
     """
     TPC 3d Dataset
     """
-    def __init__(self, split_fname):
+    def __init__(self, fname):
+        """
+        Input:
+            - fname (str): The filename of the data manifest.
+                Each line in file is an absolute path of a data file.
+        """
         super().__init__()
 
         # validity check
-        self.split_fname = Path(split_fname)
-        assert self.split_fname.exists(), \
-            f"The input split file, {split_fname}, does not exists!"
+        self.fname = Path(fname)
+        assert self.fname.exists(), \
+            f"The input split file, {fname}, does not exists!"
 
         # load split filenames
-        with open(split_fname, 'r') as file_handle:
+        with open(fname, 'r') as file_handle:
             self.file_list  = file_handle.read().splitlines()
 
 
