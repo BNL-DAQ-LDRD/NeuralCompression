@@ -3,6 +3,7 @@ Get TPC train, valid, and test dataloaders
 """
 #! /usr/bin/env python
 from pathlib import Path
+import numpy as np
 from neuralcompress.datasets.tpc_dataset import DatasetTPC3d
 import torch
 from torch.utils.data import (
@@ -23,16 +24,14 @@ def subsample_dataset(
     if sample_sz is None:
         sample_sz = len(dataset)
     assert 0 <= sample_sz <= len(dataset), \
-        f'dataset does not contains test_sz ({sample_sz}) many examples'
+        f'dataset does not contains sample_sz({sample_sz}) many examples'
 
+    indices = np.arange(len(dataset))
     if shuffle:
-        gen = None if seed is None else torch.Generator().manual_seed(seed)
-        indices = torch.randperm(len(dataset), generator=gen)
-        dataset = Subset(dataset, indices[:sample_sz])
-    else:
-        dataset = Subset(dataset, torch.arange(0, sample_sz))
+        rng = np.random.RandomState(seed)
+        rng.shuffle(indices)
 
-    return dataset
+    return Subset(dataset, indices[:sample_sz])
 
 
 def get_tpc_test_dataloader(
