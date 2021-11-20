@@ -79,10 +79,6 @@ def get_tpc_train_valid_dataloaders(
         train_sz = int(len(dataset) / (1 + valid_ratio))
         valid_sz = len(dataset) - train_sz
 
-    print(train_sz)
-    print(valid_sz)
-
-
     dataset = subsample_dataset(
         dataset,
         sample_sz = train_sz + valid_sz,
