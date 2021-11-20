@@ -40,9 +40,9 @@ def subsample_dataset(
 def get_tpc_test_dataloader(
     manifest,
     batch_size,
-    test_sz=None,
-    shuffle=True,
-    seed=None
+    test_sz = None,
+    shuffle = True,
+    seed    = None
 ):
     """
     Get TPC test dataloader
@@ -60,11 +60,11 @@ def get_tpc_test_dataloader(
 def get_tpc_train_valid_dataloaders(
     train_manifest,
     batch_size,
-    train_sz=None,
-    valid_sz=None,
-    valid_ratio=None,
-    shuffle=True,
-    seed=None
+    train_sz    = None,
+    valid_sz    = None,
+    valid_ratio = None,
+    shuffle     = True,
+    seed        = None
 ):
     """
     Get TPC train and valid dataloaders
@@ -107,12 +107,12 @@ def get_tpc_train_valid_dataloaders(
 def get_tpc_dataloaders(
     manifest_path,
     batch_size,
-    train_sz=None,
-    valid_sz=None,
-    valid_ratio=None,
-    test_sz=None,
-    shuffle=True,
-    seed=None
+    train_sz    = None,
+    valid_sz    = None,
+    valid_ratio = None,
+    test_sz     = None,
+    shuffle     = True,
+    seed        = None
 ):
     """
     Get TPC train, valid, and test dataloaders
