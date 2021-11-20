@@ -6,7 +6,7 @@ from pathlib import Path
 from neuralcompress.datasets.tpc_dataset import DatasetTPC3d
 import torch
 from torch.utils.data import (
-    RandomSampler,
+    Subset,
     random_split,
     DataLoader
 )
@@ -20,19 +20,17 @@ def subsample_dataset(
     """
     subsample a dataset
     """
+    if sample_sz is None:
+        sample_sz = len(dataset)
     assert 0 <= sample_sz <= len(dataset), \
         f'dataset does not contains test_sz ({sample_sz}) many examples'
 
     if shuffle:
         gen = None if seed is None else torch.Generator().manual_seed(seed)
-        dataset = RandomSampler(
-            dataset,
-            replacement = False,
-            num_samples = sample_sz,
-            generator   = gen
-        )
+        indices = torch.randperm(len(dataset), generator=gen)
+        dataset = Subset(dataset, indices[:sample_sz])
     else:
-        dataset = dataset[:sample_sz]
+        dataset = Subset(dataset, torch.arange(0, sample_sz))
 
     return dataset
 
@@ -76,27 +74,23 @@ def get_tpc_train_valid_dataloaders(
     ), 'give train size and valid size or just valid ratio'
 
     dataset = DatasetTPC3d(train_manifest)
-    if train_sz is not None:
-        dataset = subsample_dataset(
-            dataset,
-            sample_sz = train_sz + valid_sz,
-            shuffle   = shuffle,
-            seed      = seed
-        )
-    else:
+
+    if valid_ratio is not None:
         train_sz = int(len(dataset) / (1 + valid_ratio))
         valid_sz = len(dataset) - train_sz
 
-    if shuffle:
-        gen = None if seed is None else torch.Generator().manual_seed(seed)
-        train_dataset, valid_dataset = random_split(
-            dataset,
-            lengths   = [train_sz, valid_sz],
-            generator = gen
-        )
-    else:
-        train_dataset = dataset[:train_sz]
-        valid_dataset = dataset[train_sz:]
+    print(train_sz)
+    print(valid_sz)
+
+
+    dataset = subsample_dataset(
+        dataset,
+        sample_sz = train_sz + valid_sz,
+        shuffle   = shuffle,
+        seed      = seed
+    )
+    train_dataset = Subset(dataset, torch.arange(0, train_sz))
+    valid_dataset = Subset(dataset, torch.arange(train_sz, len(dataset)))
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
@@ -123,9 +117,9 @@ def get_tpc_dataloaders(
     test_loader = get_tpc_test_dataloader(
         test_manifest,
         batch_size,
-        test_sz=test_sz,
-        shuffle=shuffle,
-        seed=seed
+        test_sz = test_sz,
+        shuffle = shuffle,
+        seed    = seed
     )
 
     train_manifest = Path(manifest_path)/'train.txt'
@@ -134,10 +128,10 @@ def get_tpc_dataloaders(
     train_loader, valid_loader = get_tpc_train_valid_dataloaders(
         train_manifest,
         batch_size,
-        train_sz=train_sz,
-        valid_sz=valid_sz,
-        valid_ratio=valid_ratio,
-        shuffle=shuffle,
-        seed=seed
+        train_sz    = train_sz,
+        valid_sz    = valid_sz,
+        valid_ratio = valid_ratio,
+        shuffle     = shuffle,
+        seed        = seed
     )
     return train_loader, valid_loader, test_loader
