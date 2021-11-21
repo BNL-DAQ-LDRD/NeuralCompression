@@ -29,7 +29,9 @@ class DatasetTPC3d(Dataset):
 
         # load split filenames
         with open(fname, 'r') as file_handle:
-            self.file_list  = file_handle.read().splitlines()
+            self.file_list = file_handle.read().splitlines()
+
+        self._verify_files()
 
     def _verify_files(self):
         for fname in self.file_list:
