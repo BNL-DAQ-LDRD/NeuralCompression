@@ -3,14 +3,14 @@
 
 # Usage example:
     1. python -m test_tpc_dataloader -p [manifest_path] -b 32 --train_sz 32\
-         --valid_sz 32 --test_sz 32  --shuffle --seed 0
+         --valid_sz 32 --test_sz 32  --is_random --seed 0
         > Load 32 train examples, 32 valid examples, 32 test examples.
         Shuffle the dataset and seed the random number generator with 0.
     2. python -m test_tpc_dataloader -p [manifest_path] -b 32 --valid_ratio 1\
-         --no-shuffle
+         --no-is_random
         > Load all examples in the train manifest and split it into equal\
         number of train and valid examples. Load all examples in the test
-        manifest. Do not shuffle the dataset.
+        manifest. Do not is_random the dataset.
 """
 import argparse
 from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
@@ -23,7 +23,7 @@ def test(
     valid_sz    =None,
     valid_ratio =None,
     test_sz     =None,
-    shuffle     =True,
+    is_random   =True,
     seed        =None,
 ):
     """
@@ -36,7 +36,7 @@ def test(
         valid_sz    = valid_sz,
         valid_ratio = valid_ratio,
         test_sz     = test_sz,
-        shuffle     = shuffle,
+        is_random   = is_random,
         seed        = seed,
     )
 
@@ -106,18 +106,18 @@ def get_arguments():
         help='test size.'
     )
     parser.add_argument(
-        '--shuffle',
-        dest='shuffle',
+        '--random',
+        dest='is_random',
         action='store_true',
-        help='shuffle the dataset.'
+        help='shuffle the dataset during subsampling.'
     )
     parser.add_argument(
-        '--no-shuffle',
-        dest='shuffle',
+        '--not_random',
+        dest='is_random',
         action='store_false',
-        help='do not shuffle the dataset.'
+        help='do not shuffle the dataset during subsampling.'
     )
-    parser.set_defaults(shuffle=True)
+    parser.set_defaults(is_random=True)
     parser.add_argument(
         '--seed',
         type=int,
@@ -136,6 +136,6 @@ if __name__ == "__main__":
         valid_sz      = args.valid_sz,
         valid_ratio   = args.valid_ratio,
         test_sz       = args.test_sz,
-        shuffle       = args.shuffle,
+        is_random     = args.is_random,
         seed          = args.seed
     )

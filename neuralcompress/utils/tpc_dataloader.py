@@ -15,7 +15,7 @@ from torch.utils.data import (
 def subsample_dataset(
     dataset,
     sample_sz = None,
-    shuffle   = True,
+    is_random = True,
     seed      = None
 ):
     """
@@ -27,7 +27,7 @@ def subsample_dataset(
         f'dataset does not contains sample_sz({sample_sz}) many examples'
 
     indices = np.arange(len(dataset))
-    if shuffle:
+    if is_random:
         rng = np.random.RandomState(seed)
         rng.shuffle(indices)
 
@@ -37,9 +37,9 @@ def subsample_dataset(
 def get_tpc_test_dataloader(
     manifest,
     batch_size,
-    test_sz = None,
-    shuffle = True,
-    seed    = None
+    test_sz   = None,
+    is_random = True,
+    seed      = None
 ):
     """
     Get TPC test dataloader
@@ -47,7 +47,7 @@ def get_tpc_test_dataloader(
     dataset = subsample_dataset(
         DatasetTPC3d(manifest),
         sample_sz = test_sz,
-        shuffle   = shuffle,
+        is_random = is_random,
         seed      = seed
     )
 
@@ -60,7 +60,7 @@ def get_tpc_train_valid_dataloaders(
     train_sz    = None,
     valid_sz    = None,
     valid_ratio = None,
-    shuffle     = True,
+    is_random   = True,
     seed        = None
 ):
     """
@@ -81,7 +81,7 @@ def get_tpc_train_valid_dataloaders(
     dataset = subsample_dataset(
         dataset,
         sample_sz = train_sz + valid_sz,
-        shuffle   = shuffle,
+        is_random = is_random,
         seed      = seed
     )
     train_dataset = Subset(dataset, torch.arange(0, train_sz))
@@ -100,7 +100,7 @@ def get_tpc_dataloaders(
     valid_sz    = None,
     valid_ratio = None,
     test_sz     = None,
-    shuffle     = True,
+    is_random   = True,
     seed        = None
 ):
     """
@@ -112,9 +112,9 @@ def get_tpc_dataloaders(
     test_loader = get_tpc_test_dataloader(
         test_manifest,
         batch_size,
-        test_sz = test_sz,
-        shuffle = shuffle,
-        seed    = seed
+        test_sz   = test_sz,
+        is_random = is_random,
+        seed      = seed
     )
 
     train_manifest = Path(manifest_path)/'train.txt'
@@ -126,7 +126,7 @@ def get_tpc_dataloaders(
         train_sz    = train_sz,
         valid_sz    = valid_sz,
         valid_ratio = valid_ratio,
-        shuffle     = shuffle,
+        is_random   = is_random,
         seed        = seed
     )
     return train_loader, valid_loader, test_loader
