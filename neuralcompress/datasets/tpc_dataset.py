@@ -9,7 +9,6 @@ import numpy as np
 
 from torch.utils.data import Dataset
 
-
 class DatasetTPC3d(Dataset):
     """
     TPC 3d Dataset
@@ -42,7 +41,7 @@ class DatasetTPC3d(Dataset):
     def __len__(self):
         return len(self.file_list)
 
-
+      
     def __getitem__(self, idx):
         fname = self.file_list[idx]
         datum = np.expand_dims(np.float32(np.load(fname)), 0)
