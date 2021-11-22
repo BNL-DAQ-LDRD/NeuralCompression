@@ -1,4 +1,5 @@
 """
+Test the `neuralcompress/models/blocks.py`
 """
 import argparse
 from neuralcompress.models.blocks import (
@@ -9,6 +10,9 @@ import torch
 import torch.nn as nn
 
 class Encoder(nn.Module):
+    """
+    A dummy encoder
+    """
     def __init__(
         self,
         num_layers,
@@ -37,3 +41,7 @@ encoder = Encoder(3, 'relu', 'batch')
 tensor_in = torch.randn(32, 8, 16, 16, 16)
 tensor_out = encoder(tensor_in)
 print(tensor_out.shape)
+
+scripted = torch.jit.script(encoder)
+scripted.save('checkpoints/test_tpc_blocks/encoder.pt')
+
