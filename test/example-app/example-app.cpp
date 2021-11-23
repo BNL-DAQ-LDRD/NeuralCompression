@@ -4,27 +4,48 @@
 #include <memory>
 
 int main(int argc, const char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "usage: example-app <path-to-exported-script-module>\n";
+    if (argc != 3) {
+        std::cerr << "usage: example-app " <<
+        "<path-to-scripted-encoder> " <<
+        "<path-to-scripted-decoder>." << std::endl;
         return -1;
     }
 
 
-    torch::jit::script::Module module;
+    // Load encoder and decoder:
+    // Deserialize the ScriptModule from a file using torch::jit::load().
+    torch::jit::script::Module encoder;
     try {
-        // Deserialize the ScriptModule from a file using torch::jit::load().
-        module = torch::jit::load(argv[1]);
+        encoder = torch::jit::load(argv[1]);
+        std::cout << "loading encoder: ok\n";
     }
     catch (const c10::Error& e) {
-        std::cerr << "error loading the model\n";
+        std::cerr << "error loading the encoder\n";
         return -1;
     }
 
-    std::cout << "loading model: ok\n";
+    torch::jit::script::Module decoder;
+    try {
+        decoder = torch::jit::load(argv[2]);
+        std::cout << "loading decoder: ok\n";
+    }
+    catch (const c10::Error& e) {
+        std::cerr << "error loading the decoder\n";
+        return -1;
+    }
 
-    std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(torch::ones({32, 8, 16, 16, 16}));
 
-    at::Tensor output = module.forward(inputs).toTensor();
-    std::cout << output.slice(1, 0, 5) << std::endl;
+    // Encoding
+    std::vector<torch::jit::IValue> encoder_inputs;
+    encoder_inputs.push_back(torch::randn({32, 8, 16, 16, 16}));
+
+    at::Tensor code = encoder.forward(encoder_inputs).toTensor();
+    std::cout << code.sizes() << std::endl;
+
+    // Decoding
+    std::vector<torch::jit::IValue> decoder_input;
+    decoder_input.push_back(code);
+
+    at::Tensor decoded = decoder.forward(decoder_input).toTensor();
+    std::cout << decoded.sizes() << std::endl;
 }
