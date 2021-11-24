@@ -9,7 +9,7 @@ from neuralcompress.torch.select import(
 )
 
 
-def single_block(block_type, block_args, activ, norm):
+def single_block(block_type, block_args, activ=None, norm=None):
     """
     A convolution/deconvolution block
     with activation and normalization
@@ -38,7 +38,7 @@ def single_block(block_type, block_args, activ, norm):
     return nn.Sequential(layer, activ, norm)
 
 
-def double_block(block_type, block_args, activ, norm):
+def double_block(block_type, block_args, activ=None, norm=None):
     """
     A double convolution/deconvolution block that contains
         - a convolution/deconvolution layer that does,
