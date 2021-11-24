@@ -4,7 +4,7 @@ import numpy as np
 class network_design:
     def __conv(self, i, f, s, p):
         return int((i + 2 * p - f) / s) + 1
-    
+
     def __convTrans(self, i, f, s, p):
         return (i - 1) * s - 2 * p + f
 
@@ -38,19 +38,19 @@ class network_design:
             kernel_size = kernel_sizes[i]
             stride = strides[i]
             padding = paddings[i]
-            
+
             output_shape = self.get_output_shape_conv(input_shape, kernel_size, stride, padding)
             input_shape_inverse = self.get_output_shape_convTrans(output_shape, kernel_size, stride, padding)
-            
+
             # Torch scripting for C++ cannot handle numpy data type,
             # and hence we have to cast each entry to int from numpy.int64
             temp = list(input_shape - input_shape_inverse)
             output_padding = [int(t) for t in temp]
             output_paddings.append(output_padding)
-            
+
             print(f'layer {i + 1}:\n\t{input_shape} -> {output_shape}\
                 \n\t{input_shape_inverse}, output_padding={output_padding}\n')
-            
+
             input_shape = output_shape
 
         return output_paddings

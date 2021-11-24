@@ -138,6 +138,9 @@ class Decoder(nn.Module):
     def forward(self, input_x):
         """
         forward
+        NOTES FOR TORCHSCRIPT:
+            1. torch.jit.script doesn't work well with amp, but
+                torch.jit.trace does.
         """
         if self.half_mode:
             input_x = input_x.type(torch.float16)
@@ -210,8 +213,8 @@ class BCAE(nn.Module):
         activ_reg = None if transform else nn.ReLU()
         self.decoder_c = Decoder(*args, output_activ=activ_clf)
         self.decoder_r = Decoder(*args, output_activ=activ_reg)
-        self.decoder_c.set_half_model(False)
-        self.decoder_r.set_half_model(False)
+        self.decoder_c.set_half_mode(False)
+        self.decoder_r.set_half_mode(False)
 
     def set_half_mode(self, mode):
         """
