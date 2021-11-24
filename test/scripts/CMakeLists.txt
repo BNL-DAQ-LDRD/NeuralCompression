@@ -14,3 +14,7 @@ set_property(TARGET test_tpc_bcae_encoder PROPERTY CXX_STANDARD 14)
 add_executable(test_tpc_bcae_decoder test_tpc_bcae_decoder.cpp)
 target_link_libraries(test_tpc_bcae_decoder "${TORCH_LIBRARIES}")
 set_property(TARGET test_tpc_bcae_decoder PROPERTY CXX_STANDARD 14)
+
+add_executable(test_tpc_bcae test_tpc_bcae.cpp)
+target_link_libraries(test_tpc_bcae "${TORCH_LIBRARIES}")
+set_property(TARGET test_tpc_bcae PROPERTY CXX_STANDARD 14)

@@ -12,9 +12,9 @@ int main(int argc, const char* argv[]) {
 
 
     // Load BCAE decoder:
-    torch::jit::script::Module decoder;
+    torch::jit::script::Module model;
     try {
-        decoder = torch::jit::load(argv[1]);
+        model = torch::jit::load(argv[1]);
         std::cout << "loading decoder: ok\n";
     }
     catch (const c10::Error& e) {
@@ -22,11 +22,10 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-
     // Decoding
     std::vector<torch::jit::IValue> input;
     input.push_back(torch::randn({32, 8, 12, 15, 16}));
 
-    at::Tensor output = decoder.forward(input).toTensor();
+    at::Tensor output = model.forward(input).toTensor();
     std::cout << output.sizes() << std::endl;
 }

@@ -12,9 +12,9 @@ int main(int argc, const char* argv[]) {
 
 
     // Load bcae encoder
-    torch::jit::script::Module encoder;
+    torch::jit::script::Module model;
     try {
-        encoder = torch::jit::load(argv[1]);
+        model = torch::jit::load(argv[1]);
         std::cout << "loading encoder: ok\n";
     }
     catch (const c10::Error& e) {
@@ -23,9 +23,9 @@ int main(int argc, const char* argv[]) {
     }
 
     // Encoding
-    std::vector<torch::jit::IValue> encoder_inputs;
-    encoder_inputs.push_back(torch::randn({32, 1, 192, 249, 16}));
+    std::vector<torch::jit::IValue> input;
+    input.push_back(torch::randn({32, 1, 192, 249, 16}));
 
-    at::Tensor code = encoder.forward(encoder_inputs).toTensor();
-    std::cout << code.sizes() << std::endl;
+    at::Tensor output = model.forward(input).toTensor();
+    std::cout << output.sizes() << std::endl;
 }
