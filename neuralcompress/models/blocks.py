@@ -2,6 +2,7 @@
 Author:
     Yi Huang, yhuang2@bnl.gov
 """
+import torch
 import torch.nn as nn
 from neuralcompress.torch.select import(
     get_norm_layer_fn,
@@ -59,11 +60,11 @@ def double_block(block_type, block_args, activ=None, norm=None):
     """
 
     block_1 = single_block(block_type, block_args, activ, norm)
-
-    if block_type == 'conv':
-        layer_fn = nn.Conv3d
-    else:
-        layer_fn = nn.ConvTranspose3d
+    # if block_type == 'conv':
+    #     layer_fn = nn.Conv3d
+    # else:
+    #     layer_fn = nn.ConvTranspose3d
+    layer_fn = nn.Conv3d
     block_2 = layer_fn(
         block_args['out_channels'],
         block_args['out_channels'],
@@ -86,10 +87,10 @@ class TPCResidualBlock(nn.Module):
         self,
         main_block,
         side_block,
-        activ=None,
-        norm=None
+        activ  = None,
+        norm   = None,
+        rezero = True
     ):
-        super().__init__()
         """
         Input:
             - main_block (nn.Module): the network block on the main path
@@ -98,6 +99,7 @@ class TPCResidualBlock(nn.Module):
             - norm (str): type of normalization
         Output:
         """
+        super().__init__()
         assert main_block[0].in_channels == side_block[0].in_channels, \
             ('main-path block and side-path block'
              'must have the same in_channels')
@@ -114,36 +116,41 @@ class TPCResidualBlock(nn.Module):
         norm_fn    = get_norm_layer_fn(norm)
         self.norm  = norm_fn(out_channels)
 
+        if rezero:
+            self.rezero_alpha = nn.Parameter(torch.zeros((1, )))
+        else:
+            self.rezero_alpha = 1
+
     def forward(self, x_input):
         """
         forward
         """
-        x_side = self.side_block(x_input)
-        x_main = self.main_block(x_input)
-        x_output = x_main + x_side
+        x_side   = self.side_block(x_input)
+        x_main   = self.main_block(x_input)
+        x_output = self.rezero_alpha * x_main + x_side
         return self.norm(self.activ(x_output))
 
 
-def encoder_residual_block(conv_args, activ=None, norm=None):
+def encoder_residual_block(conv_args, activ=None, norm=None, rezero=True):
     """
     Get an encoder residual block.
     """
-    main_block = double_block('conv', conv_args, activ, norm)
-    side_block = single_block('conv', conv_args, activ, norm)
     return TPCResidualBlock(
-        main_block = main_block,
-        side_block = side_block,
-        activ = activ,
-        norm  = norm,
+        main_block = double_block('conv', conv_args, activ, norm),
+        side_block = single_block('conv', conv_args, activ, norm),
+        activ      = activ,
+        norm       = norm,
+        rezero     = rezero
     )
 
-def decoder_residual_block(deconv_args, activ=None, norm=None):
+def decoder_residual_block(deconv_args, activ=None, norm=None, rezero=True):
     """
     Get an decoder residual block.
     """
     return TPCResidualBlock(
         main_block = double_block('deconv', deconv_args, activ, norm),
         side_block = single_block('deconv', deconv_args, activ, norm),
-        activ = activ,
-        norm  = norm,
+        activ      = activ,
+        norm       = norm,
+        rezero     = rezero
     )
