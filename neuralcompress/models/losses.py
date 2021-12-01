@@ -3,6 +3,7 @@ Define the loss functions
 """
 import torch
 import torch.nn as nn
+import numpy as np
 
 def weighted_mse(approx, target, weight=None):
     """
@@ -44,6 +45,17 @@ def focal_loss(pred, label, gamma=None, eps=1e-8):
 # 		y = self.alpha * (x - self.mu)
 # 		return torch.sigmoid(y)
 
+def get_transform(transform):
+    """
+    Get input transform
+    """
+    if transform is None:
+        return nn.Identity()
+
+    if transform == 'bcae':
+        return lambda x: torch.exp(x) * 6 + 64
+
+    raise ValueError(f"Unknown transform {transform}")
 
 # pylint: disable=too-many-arguments
 def loss_reg(
@@ -59,17 +71,15 @@ def loss_reg(
     Input:
     Output:
     """
-    if transform is None:
-        transformed = reg_input
-    else:
-        transformed = transform(reg_input)
+    transform = get_transform(transform)
+    transformed = transform(reg_input)
 
     combined = transformed * (clf_input > clf_threshold)
     if weight_pow is None:
         weight = None
     else:
         weight = torch.pow(torch.abs(target), weight_pow)
-    return weighted_mse(combined, target, weight)
+    return weighted_mse(combined, target, weight), combined
 
 
 def loss_clf(
@@ -90,25 +100,60 @@ def loss_clf(
     return focal_loss(clf_input, label, gamma, eps=eps)
 
 
-def get_tpc_losses(clf_input, reg_input, target, loss_args):
+class BCAELossMetrics():
     """
-    Get tpc classification and regression losses.
-    Input:
-    Output:
+    BCAE loss and metrics class
     """
-    clf_loss = loss_clf(
-        clf_input,
-        target,
-        target_threshold = loss_args['target_threshold'],
-        gamma            = loss_args['gamma'],
-        eps              = loss_args['eps']
-    )
-    reg_loss = loss_reg(
-        clf_input,
-        reg_input,
-        target,
-        transform     = loss_args['transform'],
-        weight_pow    = loss_args['weight_pow'],
-        clf_threshold = loss_args['clf_threshold']
-    )
-    return clf_loss, reg_loss
+    def __init__(self, loss_args):
+        """
+        Input:
+        Output:
+        """
+        self.loss_args = loss_args
+        self.metrics = {'mse': nn.MSELoss()}
+
+    def calculate_loss_metrics(self, output, target):
+        """
+        Input:
+        Output:
+        """
+        clf_input, reg_input = output
+        clf_loss = loss_clf(
+            clf_input,
+            target,
+            target_threshold = self.loss_args['target_threshold'],
+            gamma            = self.loss_args['gamma'],
+            eps              = self.loss_args['eps']
+        )
+        reg_loss, combined = loss_reg(
+            clf_input,
+            reg_input,
+            target,
+            transform     = self.loss_args['transform'],
+            weight_pow    = self.loss_args['weight_pow'],
+            clf_threshold = self.loss_args['clf_threshold']
+        )
+        loss = reg_loss + self.loss_args['lambda'] * clf_loss
+
+        result = {
+            'clf. loss': clf_loss.item(),
+            'reg. loss': reg_loss.item(),
+            'loss': loss.item(),
+        }
+        for key, metric in self.metrics.items():
+            result[key] = metric(combined, target).item()
+
+        return loss, result
+
+    def update(self, metrics):
+        """
+        Input:
+        Output:
+        """
+        loss_avg_reg = np.mean(metrics['reg. loss'])
+        loss_avg_clf = np.mean(metrics['clf. loss'])
+        new_lambda = loss_avg_reg / loss_avg_clf
+        if self.loss_args['verbose']:
+            old_lambda = self.loss_args['lambda']
+            print(f'lambda: {old_lambda} -> {new_lambda}')
+        self.loss_args['lambda'] = new_lambda
