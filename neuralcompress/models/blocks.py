@@ -123,7 +123,10 @@ class TPCResidualBlock(nn.Module):
 
     def forward(self, x_input):
         """
-        forward
+        input_x shape: (N, C, D, H, W)
+            - N = batch_size;
+            - C = channels;
+            - D, H, W: the three spatial dimensions
         """
         x_side   = self.side_block(x_input)
         x_main   = self.main_block(x_input)

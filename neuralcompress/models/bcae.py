@@ -82,7 +82,10 @@ class BCAE(nn.Module):
 
     def forward(self, input_x):
         """
-        Forward
+        input_x shape: (N, C, D, H, W)
+            - N = batch_size;
+            - C = image_channels;
+            - D, H, W: the three spatial dimensions
         """
         code = self.encoder(input_x)
         output_clf = self.decoder_c(code)

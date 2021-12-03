@@ -62,7 +62,10 @@ class Encoder(nn.Module):
 
     def forward(self, input_x):
         """
-        forward
+        input_x shape: (N, C, D, H, W)
+            - N = batch_size;
+            - C = input_channels;
+            - D, H, W: the three spatial dimensions
         """
         return self.layers(input_x)
 
@@ -137,7 +140,10 @@ class Decoder(nn.Module):
 
     def forward(self, input_x):
         """
-        forward
+        input_x shape: (N, C, D, H, W)
+            - N = batch_size;
+            - C = input_channels;
+            - D, H, W: the three spatial dimensions
         NOTES FOR TORCHSCRIPT:
             1. torch.jit.script doesn't work well with amp, but
                 torch.jit.trace does.
@@ -219,6 +225,9 @@ class CAE(nn.Module):
 
     def forward(self, input_x):
         """
-        Forward
+        input_x shape: (N, C, D, H, W)
+            - N = batch_size;
+            - C = image_channels;
+            - D, H, W: the three spatial dimensions
         """
         return self.decoder(self.encoder(input_x))
