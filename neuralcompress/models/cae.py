@@ -107,8 +107,6 @@ class Decoder(nn.Module):
         """
         super().__init__()
 
-        self.half_mode = False
-
         # Upsampling layers
         self.layers, in_ch = nn.Sequential(), input_channels
         for idx, deconv_args in enumerate(deconv_args_list):
@@ -132,26 +130,13 @@ class Decoder(nn.Module):
         )
         self.layers.add_module('decoder_output', output_layer)
 
-    def set_half_mode(self, mode):
-        """
-        when half_mode is set to True, use half float
-        """
-        self.half_mode = mode
-
     def forward(self, input_x):
         """
         input_x shape: (N, C, D, H, W)
             - N = batch_size;
             - C = input_channels;
             - D, H, W: the three spatial dimensions
-        NOTES FOR TORCHSCRIPT:
-            1. torch.jit.script doesn't work well with amp, but
-                torch.jit.trace does.
         """
-        if self.half_mode:
-            input_x = input_x.type(torch.float16)
-            with torch.cuda.amp.autocast():
-                return self.layers(input_x)
         return self.layers(input_x)
 
 
@@ -215,13 +200,6 @@ class CAE(nn.Module):
             image_channels,
             output_activ=nn.ReLU()
         )
-        self.decoder.set_half_mode(False)
-
-    def set_half_mode(self, mode):
-        """
-        when half_mode is set to True, use half float
-        """
-        self.decoder.set_half_mode(mode)
 
     def forward(self, input_x):
         """

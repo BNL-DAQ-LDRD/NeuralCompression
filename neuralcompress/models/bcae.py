@@ -70,15 +70,6 @@ class BCAE(nn.Module):
         activ_reg = None if transform else nn.ReLU()
         self.decoder_c = Decoder(*args, output_activ=activ_clf)
         self.decoder_r = Decoder(*args, output_activ=activ_reg)
-        self.decoder_c.set_half_mode(False)
-        self.decoder_r.set_half_mode(False)
-
-    def set_half_mode(self, mode):
-        """
-        when half_mode is set to True, use half float
-        """
-        self.decoder_c.set_half_mode(mode)
-        self.decoder_r.set_half_mode(mode)
 
     def forward(self, input_x):
         """
