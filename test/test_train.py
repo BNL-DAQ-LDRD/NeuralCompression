@@ -101,12 +101,11 @@ config = {
         'lambda'           : 20000, # initial lambda,
         'verbose'          : True,
     },
-    'epochs': 40,
+    'epochs': 2000,
     'save_path': ( # must be an absolute path
-        '/home/yhuang2/PROJs/NeuralCompression'
-        '/results/checkpoints'
+        '/home/yhuang2/PROJs/NeuralCompression_results/checkpoints/'
     ),
-    'save_freq': 2
+    'save_freq': 20
 }
 
 train(config)

@@ -4,7 +4,7 @@ Author:
 """
 import torch
 import torch.nn as nn
-from neuralcompress.torch.select import(
+from neuralcompress.utils.select import(
     get_norm_layer_fn,
     get_activ_layer,
 )

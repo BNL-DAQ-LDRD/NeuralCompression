@@ -84,12 +84,12 @@ def run_epoch(
         results_avg = {key: np.mean(val) for key, val in results.items()}
 
         progbar.set_postfix(
-            {key: format_float(val) for key, val in results_avg.items()}, 
+            {key: format_float(val) for key, val in results_avg.items()},
             refresh=False
         )
         progbar.update()
     progbar.close()
-    
+
     if is_train:
         loss_metrics.update(results_avg)
 
