@@ -1,11 +1,33 @@
 """
 Test the Encoder class in `neuralcompress/models/bcae.py`
 """
+from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
 from neuralcompress.models.bcae import Encoder
 import torch
+import sys
+from time import time
 
 
 if __name__ == '__main__':
+    
+    config = {
+        'data_path': '/data/datasets/sphenix/highest_framedata_3d/outer',
+        'data': {
+            'batch_size' : int(sys.argv[1]),
+            'train_sz'   : 2560,
+            'valid_sz'   : 0,
+            'test_sz'    : 0,
+            'is_random'  : True,
+        }
+    }
+    device = sys.argv[2]
+    assert device in ['cpu', 'cuda']
+
+    train_loader, _, _ = get_tpc_dataloaders(
+        config['data_path'],
+        **config['data']
+    )
+    
 
     # Construct encoder network
     layer_1 = {
@@ -39,7 +61,7 @@ if __name__ == '__main__':
         norm            = 'instance',
         output_channels = 8
     )
-    print(encoder)
+    encoder.to(device)
 
     # Get number of parameters
     total_numel = 0
@@ -47,11 +69,23 @@ if __name__ == '__main__':
         total_numel += parameter.numel()
     print(f'{total_numel/1e3:.2f}K')
 
+    # warmup
+    for batch in train_loader:
+        batch = batch.to(device)
+        tensor_out = encoder(batch)
+    
     # Encoding
-    tensor_in = torch.randn(32, 1, 192, 249, 16)
-    tensor_out = encoder(tensor_in)
-    print(tensor_out.shape)
+    T = 10
+    time0 = time()
+    with torch.no_grad():
+        for _ in range(T):
+            for batch in train_loader:
+                tensor_out = encoder(batch)
+    time_total = time() - time0
+    
+    print(f'{time_total:.4f}')
+    time_per_input = time_total / (T * config['data']['train_sz'])
+    print(f'{time_per_input:.6f}')
+    time_per_frame = time_per_input * 24
+    print(f'{time_per_frame:.6f}')
 
-    # script and save
-    scripted = torch.jit.script(encoder)
-    scripted.save('checkpoints/test_tpc_bcae/encoder.pt')

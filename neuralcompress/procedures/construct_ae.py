@@ -6,7 +6,7 @@ from neuralcompress.models.bcae import BCAE
 from neuralcompress.models.losses import BCAELossMetrics
 
 from neuralcompress.procedures.init_network import winit_func
-from neuralcompress.torch.select import (
+from neuralcompress.torch.utils import (
     extract_name_kwargs,
     select_optimizer,
     select_scheduler,
