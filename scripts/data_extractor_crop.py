@@ -25,14 +25,14 @@ sample_dim = 10
 # ============================ Dimensions ============================ END
 
 def extract(
-    input_dir, 
-    output_dir, 
-    layer_groups=None, 
-    num_sectors=1, 
-    sectors=None, 
+    input_dir,
+    output_dir,
+    layer_groups=None,
+    num_sectors=1,
+    sectors=None,
     num_sections=1,
     sections=None):
-    """ 
+    """
     **Data Extraction**
 
     This function extracts data from h5 files:
@@ -41,31 +41,31 @@ def extract(
     - Inner layer has dimension $1152$, with file size $\approx88$MB.
     - Middle layer has dimension $1536$, with file size $\approx117$MB.
     - Outer layer has dimension $2304$, withfile size $\approx210$MB.
-    
-    **note**: 
+
+    **note**:
     - 498 = 83 * 2 * 3;
-    - 1152 = (2^7) * (3^2); 
-    - 1536 = (2^9) * 3; 
+    - 1152 = (2^7) * (3^2);
+    - 1536 = (2^9) * 3;
     - 2304 = (2^8) * (3^2).
-    For now, it is enforced that we cut the circle and z direction 
+    For now, it is enforced that we cut the circle and z direction
     into a number of parts that divides the corresponding dimension.
 
     **input**:
     - input_dir: folder containing the h5 files.
     - otuput_dir: the folder containing npy files contains the each crop from each (sample, layer).
-    - layer_groups: value or a list of values in ["inner", "middle", or "outer"]; 
+    - layer_groups: value or a list of values in ["inner", "middle", or "outer"];
         If None, extract all;
-    - num_sectors: number of sectors in the circle; 
-        The azimuthal dimension should be divisible by num_sectors. 
-    - sectors: a list of numbers in {0, 1, ..., num_sectors - 1}; 
-        The sectors to keep; 
+    - num_sectors: number of sectors in the circle;
+        The azimuthal dimension should be divisible by num_sectors.
+    - sectors: a list of numbers in {0, 1, ..., num_sectors - 1};
+        The sectors to keep;
         If None, keep all.
-    - num_sections: number of sections in the "z" (horizontal) direction; 
+    - num_sections: number of sections in the "z" (horizontal) direction;
         The z dimension should be divisible by num_sections.
-    - sections: a list of numbers in {0, 1, ..., num_sections - 1}; 
-        The sections to keep; 
+    - sections: a list of numbers in {0, 1, ..., num_sections - 1};
+        The sections to keep;
         If None, keep all.
-    
+
     **output file structure**:
     - [output_dir]/[layer_group]/[num_sectors]-[num_sections]_[sector]-[section]/[file_name]_[sample_id]_[layer].npy
     """
@@ -79,7 +79,7 @@ def extract(
         else:
             if layer_groups in layer_choice_map:
                 layer_groups = [layer_groups]
-        
+
     for lg in layer_groups:
         assert layer_dim_map[lg] % num_sectors == 0, \
             f'number of sectors {num_sectors} must divide the dimension {layer_dim_map[lg]} of the {lg} layer'
@@ -105,7 +105,7 @@ def extract(
                 f"all values in {sections} should be in [0, ..., {num_sections} - 1]"
         else:
             sections = [sections]
-    
+
     print(f'\n================= Double-check the parameters =================\n')
     print(f'\tlayer groups to extract = {layer_groups}')
     print(f'\tnumber of sectors = {num_sectors}')
@@ -117,7 +117,7 @@ def extract(
         print('Terminating')
         exit(1)
     # =========================== Parameters validity check ============================ END
-    
+
     # =============================== making directories =============================== START
     output_dir = Path(output_dir)
     for (lg, sr, sn) in product(layer_groups, sectors, sections):
@@ -125,14 +125,14 @@ def extract(
         output_subdir.mkdir(parents=True, exist_ok=True)
     # =============================== making directories =============================== END
 
-    
+
     # ==================================== Extract ===================================== START
     for lg in layer_groups:
         layer_start_idx = layer_choice_map[lg]
         azimuthal_dim = layer_dim_map[lg]
         a_block_size = azimuthal_dim // num_sectors
         z_block_size = z_dim // num_sections
-        
+
         prefix = output_dir/f'{lg}/{num_sectors}-{num_sections}'
 
         h5_file_list = sorted(list(input_dir.glob('*.h5')))
@@ -157,7 +157,7 @@ def extract(
 
 
 if __name__ == '__main__':
-    
+
     # input_dir = '/data/sphenix/sPHENIX_data/highest_tpc'
     # output_dir = './data/highest_framedata/'
 
@@ -188,9 +188,9 @@ if __name__ == '__main__':
     sectors, sections = args.sectors, args.sections
 
     extract(
-        input_dir, 
-        output_dir, 
-        layer_groups=layer_groups, 
+        input_dir,
+        output_dir,
+        layer_groups=layer_groups,
         num_sectors=num_sectors,
         sectors=sectors,
         num_sections=num_sections,
