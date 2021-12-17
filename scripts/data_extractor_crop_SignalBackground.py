@@ -158,8 +158,11 @@ def extract(
                         datum_adc = buf_adc[a_start: a_end, z_start: z_end, :]
                         datum_sbg = buf_sbg[a_start: a_end, z_start: z_end, :]
 
-                        np.save(Path(f'{prefix}_{sr}-{sn}/{stem}_{s}_adc'), datum_adc)
-                        np.save(Path(f'{prefix}_{sr}-{sn}/{stem}_{s}_sbg'), datum_sbg)
+                        np.savez(
+                            Path(f'{prefix}_{sr}-{sn}/{stem}_{s}'),
+                            adc=datum_adc,
+                            sbg=datum_sbg
+                        )
     # ==================================== Extract ===================================== END
 
 
