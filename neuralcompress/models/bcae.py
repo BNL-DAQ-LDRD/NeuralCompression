@@ -1,84 +1,66 @@
 """
-yhuang2@bnl.gov
+BCAE model
 """
+import torch
 
-import torch.nn as nn
-from neuralcompress.models.cae import Encoder, Decoder
+from neuralcompression.models.model_base import ModelBase
+from neuralcompression.models.bcae_encoder import get_bcae_encoder
+from neuralcompression.models.bcae_decoder import get_bcae_decoder
+from neuralcompression.models.bcae_losses import get_bcae_loss_metric
 
 
-# The Bicephalous Auto-Encoder
-class BCAE(nn.Module):
+class BCAE(ModelBase):
     """
-    An auto-encoder with one encoder and two decoders --
-    one for segmentation and one for regression.
+    bcae
     """
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
-        image_channels,
-        code_channels,
-        conv_args_list,
-        deconv_args_list,
-        activ,
-        norm,
-        transform=True
+        optimizer,
+        scheduler,
+        device
     ):
-        """
-        Input:
-            - image_channels (int): number of channels of the input image.
-            - code_channels (int): number of channels of the code.
-            - conv_args_list (list of dictionary): arguments for the
-                convolution/downsampling layers. Each entry in the list is
-                a dictionary contains the following keys:
-                - out_channels;
-                - kernel_size;
-                - stride;
-                - padding;
-            - deconv_args_list (list of dictionary): arguments for the
-                deconvolution/upsampling layers. Each entry in the list is
-                a dictionary contains the following keys:
-                - out_channels;
-                - kernel_size;
-                - stride;
-                - padding;
-                - output_padding;
-            - activ (str or dictionary): type or parameters for the activation
-                in encoder/decoder.
-            - norm (str): type for the normalization in encoder/decoder .
-            - transform (bool): whether to do input transform.
-        """
-        super().__init__()
+        encoder     = get_bcae_encoder()
+        decoder     = get_bcae_decoder()
+        loss_metric = get_bcae_loss_metric()
 
-        # Encoder
-        self.encoder = Encoder(
-            image_channels,
-            conv_args_list,
-            activ,
-            norm,
-            code_channels
+        super().__init__(
+            encoder,
+            decoder,
+            loss_metric,
+            optimizer,
+            scheduler,
+            device
         )
 
-        # Decoders
-        args = [
-            code_channels,
-            deconv_args_list,
-            activ,
-            norm,
-            image_channels
-        ]
-        activ_clf = 'sigmoid'
-        activ_reg = None if transform else nn.ReLU()
-        self.decoder_c = Decoder(*args, output_activ=activ_clf)
-        self.decoder_r = Decoder(*args, output_activ=activ_reg)
 
-    def forward(self, input_x):
+    def handle_epoch_end(self):
         """
-        input_x shape: (N, C, D, H, W)
-            - N = batch_size;
-            - C = image_channels;
-            - D, H, W: the three spatial dimensions
+        end of epoch bahavior
         """
-        code = self.encoder(input_x)
-        output_clf = self.decoder_c(code)
-        output_reg = self.decoder_r(code)
-        return output_clf, output_reg
+        self.metrics = {key: 0 for key in self.metrics_seq}
+        self.iters   = 0
+        self.scheduler.step()
+
+        self.loss_metric.update(self.metrics)
+
+
+def get_bcae():
+    """
+    User's should provide such a function.
+    And define parameters here.
+    """
+    optimizer = {
+        'fn'     : torch.optim.AdamW,
+        'kwargs' : {'lr' : 0.01}
+    }
+    scheduler = {
+        'fn'     : torch.optim.lr_scheduler.StepLR,
+        'kwargs' : {
+            'step_size' : 20,
+            'gamma'     : .95,
+            'verbose'   : True,
+        }
+    }
+    device = 'cuda'
+
+    return BCAE(optimizer, scheduler, device)
