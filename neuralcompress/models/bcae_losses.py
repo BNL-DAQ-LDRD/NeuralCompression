@@ -58,51 +58,64 @@ class FocalLoss(nn.Module):
         return -torch.mean(focal_loss)
 
 
-def get_transform(transform):
-    """
-    Get input transform
-    """
-    if transform is None:
-        return nn.Identity()
-
-    if transform == 'bcae':
-        return lambda x: torch.exp(x) * 6 + 64
-
-    raise ValueError(f"Unknown transform {transform}")
-
-
-class LossMetric(nn.Module):
+class BCAELoss(nn.Module):
     """
     BCAE loss and metrics class
     """
-    def __init__(self, loss_args, metrics):
+
+    # class constants for default settings:
+    TRANSFORM         = lambda x: torch.exp(x) * 6 + 64
+    WEIGHT_POW        = .1
+    CLF_THRESHOLD     = .5
+    TARGET_THRESHOLD  = 64
+    GAMMA             = 2
+    EPS               = 1e-8
+    CLF_LOSS_COEF_EXP = .5
+    OTHER_LOSSES_DICT = None
+
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        transform         = TRANSFORM,
+        weight_pow        = WEIGHT_POW,
+        clf_threshold     = CLF_THRESHOLD,
+        target_threshold  = TARGET_THRESHOLD,
+        gamma             = GAMMA,
+        eps               = EPS,
+        clf_loss_coef_exp = CLF_LOSS_COEF_EXP,
+        other_losses_dict = OTHER_LOSSES_DICT
+    ):
         """
         Input:
         Output:
         """
         super().__init__()
 
-        self.clf_lambda    = loss_args['lambda']
-        self.clf_threshold = loss_args['clf_threshold']
-        self.tgt_threshold = loss_args['target_threshold']
+        self.clf_threshold    = clf_threshold
+        self.target_threshold = target_threshold
+        self.transform        = transform
 
         # Classification loss
-        gamma = self.loss_args['gamma']
-        eps   = self.loss_args['eps']
         if gamma is None:
             self.clf_loss_fn = nn.BCELoss()
         else:
             self.clf_loss_fn = FocalLoss(gamma, eps)
 
         # Regression loss
-        weight_pow = self.loss_args['weight_pow']
         if weight_pow is None:
             self.reg_loss_fn = nn.MSELoss()
         else:
             self.reg_loss_fn = TargetWeightedMSELoss(weight_pow)
 
-        # Metrics
-        self.metrics = metrics
+        self.clf_loss_coef = 0
+        self.clf_loss_coef_exp = clf_loss_coef_exp
+
+        # Additional Loss(es).
+        # Given as a dictionary
+        if other_losses_dict:
+            self.other_losses_dict = other_losses_dict
+        else:
+            self.other_losses_dict = {}
 
 
     def forward(self, output, target):
@@ -111,49 +124,32 @@ class LossMetric(nn.Module):
         Output:
         """
         clf_input, reg_input = output
-        result = {}
+        losses = {}
 
         # Classification, regression, and total loss
-        label = target > self.tgt_threshold
-        result['clf. loss'] = self.clf_loss_fn(clf_input, label)
+        label = target > self.target_threshold
+        losses['clf. loss'] = self.clf_loss_fn(clf_input, label)
 
         combined = self.transform(reg_input) * (clf_input > self.clf_threshold)
-        result['reg. loss'] = self.reg_loss_fn(combined, target)
+        losses['reg. loss'] = self.reg_loss_fn(combined, target)
 
-        loss = result['reg. loss'] + self.clf_lambda * result['clf. loss']
-        result['loss'] = loss
+        # update coefficient to the classification loss
+        self.clf_loss_coef = (self.clf_loss_coef_exp * self.clf_loss_coef \
+            + losses['reg. loss'] / losses['clf. loss']) / \
+            (1 + self.clf_loss_coef_exp)
 
-        # Metrics
-        for key, metric in self.metrics.items():
-            result[key] = metric(combined, target).item()
+        # Get the overall loss
+        overall_loss = losses['reg. loss'] \
+            + self.clf_loss_coef * losses['clf. loss']
+        losses['loss'] = overall_loss
 
-        return loss, result
+        # in case there are other losses specified
+        for loss_type, loss_fn in self.other_losses_dict.items():
+            losses[loss_type] = loss_fn(combined, target)
 
-
-    def update(self, metrics):
-        """
-        Input:
-        Output:
-        """
-        self.clf_lambda = (metrics['reg. loss'] / metrics['clf. loss']).item()
+        return losses
 
 
-def get_bcae_loss_metric():
-    """
-    This is a function that user should provide.
-    Define the parameters here.
-    """
-
-    loss_args = {
-        'transform'        : 'bcae',
-        'weight_pow'       : .1,
-        'clf_threshold'    : .5,
-        'target_threshold' : 64,
-        'gamma'            : 2,
-        'eps'              : 1e-8,
-        'lambda'           : 20000, # initial lambda,
-        'verbose'          : True,
-    },
-    metrics = {'mse': nn.MSELoss()}
-
-    return LossMetric(loss_args, metrics)
+if __name__ == '__main__':
+    loss = BCAELoss()
+    print(loss)

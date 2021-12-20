@@ -49,12 +49,12 @@ class BCAEEncoder(nn.Module):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        input_channels=IMAGE_CHANNELS,
-        conv_args_list=CONV_ARGS_LIST,
-        activ=ACTIV,
-        norm_fn=NORM_FN,
-        output_channels=CODE_CHANNELS,
-        rezero=REZERO
+        input_channels  = IMAGE_CHANNELS,
+        conv_args_list  = CONV_ARGS_LIST,
+        activ           = ACTIV,
+        norm_fn         = NORM_FN,
+        output_channels = CODE_CHANNELS,
+        rezero          = REZERO
     ):
         """
         Input:
