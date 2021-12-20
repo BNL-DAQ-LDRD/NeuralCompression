@@ -89,71 +89,50 @@ class BCAEDecoder(nn.Module):
     BCAE decoder with two heads.
     """
 
-    # class constants for default settings:
-    DECONV_1 = {
-        'out_channels': 16,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-    DECONV_2 = {
-        'out_channels': 8,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-    DECONV_3 = {
-        'out_channels': 4,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-    DECONV_4 = {
-        'out_channels': 2,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-
-    IMAGE_CHANNELS   = 1
-    DECONV_ARGS_LIST = (DECONV_1, DECONV_2, DECONV_3, DECONV_4)
-    ACTIV            = nn.LeakyReLU(negative_slope=.2)
-    NORM_FN          = nn.InstanceNorm3d
-    CODE_CHANNELS    = 8
-    REZERO           = True
-
-    # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        input_channels   = CODE_CHANNELS,
-        deconv_args_list = DECONV_ARGS_LIST,
-        activ            = ACTIV,
-        norm_fn          = NORM_FN,
-        output_channels  = IMAGE_CHANNELS,
-        rezero           = REZERO
-    ):
+    def __init__(self):
         """
-        Input:
-            - code_channels (int): number of channels of the code.
-            - deconv_args_list (list of dictionary): arguments for the
-                deconvolution/upsampling layers. Each entry in the list is
-                a dictionary contains the following keys:
-                - out_channels;
-                - kernel_size;
-                - stride;
-                - padding;
-                - output_padding;
-            - activ: activation layer;
-            - norm: normalization function (a normalization function without
-                parameter. Need to be initialized with parameter.)
-            - image_channels (int): number of channels of the input image.
+        input_channels = code_channels;
+        output_channels = image_channels;
         """
         super().__init__()
 
+        # default settings
+        deconv_1 = {
+            'out_channels': 16,
+            'kernel_size' : [4, 3, 3],
+            'padding'     : [1, 0, 1],
+            'stride'      : [2, 2, 1],
+            'output_padding': 0
+        }
+        deconv_2 = {
+            'out_channels': 8,
+            'kernel_size' : [4, 4, 3],
+            'padding'     : [1, 1, 1],
+            'stride'      : [2, 2, 1],
+            'output_padding': 0
+        }
+        deconv_3 = {
+            'out_channels': 4,
+            'kernel_size' : [4, 4, 3],
+            'padding'     : [1, 1, 1],
+            'stride'      : [2, 2, 1],
+            'output_padding': 0
+        }
+        deconv_4 = {
+            'out_channels': 2,
+            'kernel_size' : [4, 3, 3],
+            'padding'     : [1, 0, 1],
+            'stride'      : [2, 2, 1],
+            'output_padding': 0
+        }
+        output_channels  = 1
+        deconv_args_list = (deconv_1, deconv_2, deconv_3, deconv_4)
+        activ            = nn.LeakyReLU(negative_slope=.2)
+        norm_fn          = nn.InstanceNorm3d
+        input_channels   = 8
+        rezero           = True
+
+        # set up the network
         args = {
             'input_channels'   : input_channels,
             'deconv_args_list' : deconv_args_list,

@@ -12,67 +12,48 @@ class BCAEEncoder(nn.Module):
     Encoder with a few downsampling layers plus an output layer.
     """
 
-    # class constants for default settings:
-    CONV_1 = {
-        'out_channels': 8,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1]
-    }
-    CONV_2 = {
-        'out_channels': 16,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1]
-    }
-    CONV_3 = {
-        'out_channels': 32,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1]
-    }
-    CONV_4 = {
-        'out_channels': 32,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1]
-    }
-
-    IMAGE_CHANNELS  = 1
-    CONV_ARGS_LIST  = (CONV_1, CONV_2, CONV_3, CONV_4)
-    ACTIV           = nn.LeakyReLU(negative_slope=.2)
-    NORM_FN         = nn.InstanceNorm3d
-    CODE_CHANNELS   = 8
-    REZERO          = True
 
 
     # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        input_channels  = IMAGE_CHANNELS,
-        conv_args_list  = CONV_ARGS_LIST,
-        activ           = ACTIV,
-        norm_fn         = NORM_FN,
-        output_channels = CODE_CHANNELS,
-        rezero          = REZERO
-    ):
+    def __init__(self):
         """
-        Input:
-            - input_channels (int): input_channels of the first convolution
-                layers
-            - conv_args_list (list of dictionary): arguments for the
-                convolution/downsampling layers. Each entry in the list is
-                a dictionary contains the following keys:
-                - out_channels;
-                - kernel_size;
-                - stride;
-                - padding;
-            - activ: activation layer;
-            - norm: normalization function (a normalization function without
-                parameter. Need to be initialized with parameter.)
-            - output_channels (int): out_channels in the output layer.
+        input_channels = image_channels;
+        output_channels = code_channels;
         """
         super().__init__()
+
+        # default settings
+        conv_1 = {
+            'out_channels': 8,
+            'kernel_size' : [4, 3, 3],
+            'padding'     : [1, 0, 1],
+            'stride'      : [2, 2, 1]
+        }
+        conv_2 = {
+            'out_channels': 16,
+            'kernel_size' : [4, 4, 3],
+            'padding'     : [1, 1, 1],
+            'stride'      : [2, 2, 1]
+        }
+        conv_3 = {
+            'out_channels': 32,
+            'kernel_size' : [4, 4, 3],
+            'padding'     : [1, 1, 1],
+            'stride'      : [2, 2, 1]
+        }
+        conv_4 = {
+            'out_channels': 32,
+            'kernel_size' : [4, 3, 3],
+            'padding'     : [1, 0, 1],
+            'stride'      : [2, 2, 1]
+        }
+
+        input_channels  = 1
+        conv_args_list  = (conv_1, conv_2, conv_3, conv_4)
+        activ           = nn.LeakyReLU(negative_slope=.2)
+        norm_fn         = nn.InstanceNorm3d
+        output_channels = 8
+        rezero          = True
 
         # Downsampling layers
         self.layers, in_ch = nn.Sequential(), input_channels

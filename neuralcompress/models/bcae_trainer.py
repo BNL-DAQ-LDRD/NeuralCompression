@@ -14,31 +14,23 @@ class BCAETrainer(AutoencoderTrainer):
     bcae trainer
     """
 
-    # class constant for default setting
-    ENCODER        = BCAEEncoder()
-    DECODER        = BCAEDecoder()
-    LOSS           = BCAELoss()
-    OPTIMIZER_INFO = (torch.optim.AdamW, {'lr' : 0.01})
-    SCHEDULER_INFO = (
-        torch.optim.lr_scheduler.StepLR,
-        {
-            'step_size' : 20,
-            'gamma'     : .95,
-            'verbose'   : True,
-        }
-    )
-    DEVICE = 'cuda'
+    def __init__(self):
 
-    # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        encoder        = ENCODER,
-        decoder        = DECODER,
-        loss           = LOSS,
-        optimizer_info = OPTIMIZER_INFO,
-        scheduler_info = SCHEDULER_INFO,
-        device         = DEVICE
-    ):
+        # default settings
+        encoder        = BCAEEncoder()
+        decoder        = BCAEDecoder()
+        loss           = BCAELoss()
+        optimizer_info = (torch.optim.AdamW, {'lr' : 0.01})
+        scheduler_info = (
+            torch.optim.lr_scheduler.StepLR,
+            {
+                'step_size' : 20,
+                'gamma'     : .95,
+                'verbose'   : True,
+            }
+        )
+        device = 'cuda'
+
         super().__init__(
             encoder,
             decoder,

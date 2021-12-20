@@ -64,36 +64,29 @@ class BCAELoss(nn.Module):
     """
 
     # class constants for default settings:
-    TRANSFORM         = lambda x: torch.exp(x) * 6 + 64
-    WEIGHT_POW        = .1
-    CLF_THRESHOLD     = .5
-    TARGET_THRESHOLD  = 64
-    GAMMA             = 2
-    EPS               = 1e-8
-    CLF_LOSS_COEF_EXP = .5
-    OTHER_LOSSES_DICT = None
 
     # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        transform         = TRANSFORM,
-        weight_pow        = WEIGHT_POW,
-        clf_threshold     = CLF_THRESHOLD,
-        target_threshold  = TARGET_THRESHOLD,
-        gamma             = GAMMA,
-        eps               = EPS,
-        clf_loss_coef_exp = CLF_LOSS_COEF_EXP,
-        other_losses_dict = OTHER_LOSSES_DICT
-    ):
+    def __init__(self):
         """
-        Input:
-        Output:
+        Initialize the parameters
         """
         super().__init__()
 
-        self.clf_threshold    = clf_threshold
-        self.target_threshold = target_threshold
+        # default settings
+        transform         = lambda x: torch.exp(x) * 6 + 64
+        weight_pow        = .1
+        clf_threshold     = .5
+        target_threshold  = 64
+        gamma             = 2
+        eps               = 1e-8
+        clf_loss_coef_exp = .5
+        other_losses_dict = None
+
+        # set up the network
         self.transform        = transform
+        self.target_threshold = target_threshold
+        self.clf_threshold    = clf_threshold
+
 
         # Classification loss
         if gamma is None:
