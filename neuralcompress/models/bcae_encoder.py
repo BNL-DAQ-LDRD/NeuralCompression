@@ -11,6 +11,7 @@ class BCAEEncoder(nn.Module):
     """
     Encoder with a few downsampling layers plus an output layer.
     """
+
     # class constants for default settings:
     CONV_1 = {
         'out_channels': 8,

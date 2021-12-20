@@ -1,7 +1,6 @@
 """
 User need to define decoder here
 """
-
 import torch.nn as nn
 from neuralcompress.models.bcae_blocks import (
     single_block,
@@ -85,19 +84,57 @@ class DecoderOneHead(nn.Module):
         return self.layers(input_x)
 
 
-class Decoder(nn.Module):
+class BCAEDecoder(nn.Module):
     """
     BCAE decoder with two heads.
     """
+
+    # class constants for default settings:
+    DECONV_1 = {
+        'out_channels': 16,
+        'kernel_size' : [4, 3, 3],
+        'padding'     : [1, 0, 1],
+        'stride'      : [2, 2, 1],
+        'output_padding': 0
+    }
+    DECONV_2 = {
+        'out_channels': 8,
+        'kernel_size' : [4, 4, 3],
+        'padding'     : [1, 1, 1],
+        'stride'      : [2, 2, 1],
+        'output_padding': 0
+    }
+    DECONV_3 = {
+        'out_channels': 4,
+        'kernel_size' : [4, 4, 3],
+        'padding'     : [1, 1, 1],
+        'stride'      : [2, 2, 1],
+        'output_padding': 0
+    }
+    DECONV_4 = {
+        'out_channels': 2,
+        'kernel_size' : [4, 3, 3],
+        'padding'     : [1, 0, 1],
+        'stride'      : [2, 2, 1],
+        'output_padding': 0
+    }
+
+    IMAGE_CHANNELS   = 1
+    DECONV_ARGS_LIST = (DECONV_1, DECONV_2, DECONV_3, DECONV_4)
+    ACTIV            = nn.LeakyReLU(negative_slope=.2)
+    NORM_FN          = nn.InstanceNorm3d
+    CODE_CHANNELS    = 8
+    REZERO           = True
+
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        input_channels,
-        deconv_args_list,
-        activ,
-        norm_fn,
-        output_channels,
-        rezero=True
+        input_channels=CODE_CHANNELS,
+        deconv_args_list=DECONV_ARGS_LIST,
+        activ=ACTIV,
+        norm_fn=NORM_FN,
+        output_channels=IMAGE_CHANNELS,
+        rezero=REZERO
     ):
         """
         Input:
@@ -147,53 +184,7 @@ class Decoder(nn.Module):
         return self.decoder_c(code), self.decoder_r(code)
 
 
-def get_bcae_decoder():
-    """
-    User need to provide such a function.
-    They should adjust the parameter here.
-    """
-
-    deconv_1 = {
-        'out_channels': 16,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-    deconv_2 = {
-        'out_channels': 8,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-    deconv_3 = {
-        'out_channels': 4,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-    deconv_4 = {
-        'out_channels': 2,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1],
-        'output_padding': 0
-    }
-
-    image_channels   = 1
-    deconv_args_list = [deconv_1, deconv_2, deconv_3, deconv_4]
-    activ            = nn.LeakyReLU(negative_slope=.2)
-    norm_fn          = nn.InstanceNorm3d
-    code_channels    = 8
-    rezero           = True
-
-    return Decoder(
-        code_channels,
-        deconv_args_list,
-        activ,
-        norm_fn,
-        image_channels,
-        rezero
-    )
+if __name__ == "__main__":
+    print("This is the main of bcae_decoder.py")
+    decoder = BCAEDecoder()
+    print(decoder)
