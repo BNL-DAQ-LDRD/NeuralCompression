@@ -1,26 +1,59 @@
 """
 User need to define encoder here
 """
-
 import torch.nn as nn
 from neuralcompress.models.bcae_blocks import (
     single_block,
     encoder_residual_block,
 )
 
-class Encoder(nn.Module):
+class BCAEEncoder(nn.Module):
     """
     Encoder with a few downsampling layers plus an output layer.
     """
+    # class constants for default settings:
+    CONV_1 = {
+        'out_channels': 8,
+        'kernel_size' : [4, 3, 3],
+        'padding'     : [1, 0, 1],
+        'stride'      : [2, 2, 1]
+    }
+    CONV_2 = {
+        'out_channels': 16,
+        'kernel_size' : [4, 4, 3],
+        'padding'     : [1, 1, 1],
+        'stride'      : [2, 2, 1]
+    }
+    CONV_3 = {
+        'out_channels': 32,
+        'kernel_size' : [4, 4, 3],
+        'padding'     : [1, 1, 1],
+        'stride'      : [2, 2, 1]
+    }
+    CONV_4 = {
+        'out_channels': 32,
+        'kernel_size' : [4, 3, 3],
+        'padding'     : [1, 0, 1],
+        'stride'      : [2, 2, 1]
+    }
+
+    IMAGE_CHANNELS  = 1
+    CONV_ARGS_LIST  = (CONV_1, CONV_2, CONV_3, CONV_4)
+    ACTIV           = nn.LeakyReLU(negative_slope=.2)
+    NORM_FN         = nn.InstanceNorm3d
+    CODE_CHANNELS   = 8
+    REZERO          = True
+
+
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        input_channels,
-        conv_args_list,
-        activ,
-        norm_fn,
-        output_channels,
-        rezero=True
+        input_channels=IMAGE_CHANNELS,
+        conv_args_list=CONV_ARGS_LIST,
+        activ=ACTIV,
+        norm_fn=NORM_FN,
+        output_channels=CODE_CHANNELS,
+        rezero=REZERO
     ):
         """
         Input:
@@ -62,7 +95,8 @@ class Encoder(nn.Module):
             'kernel_size'  : 3,
             'padding'      : 1
         }
-        output_layer = single_block('conv', block_args)
+        norm = norm_fn(output_channels)
+        output_layer = single_block('conv', block_args, activ, norm)
         self.layers.add_module('encoder_output', output_layer)
 
     def forward(self, input_x):
@@ -74,49 +108,7 @@ class Encoder(nn.Module):
         """
         return self.layers(input_x)
 
-
-def get_bcae_encoder():
-    """
-    User need to provide such a function.
-    They should adjust the parameter here.
-    """
-    conv_1 = {
-        'out_channels': 8,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1]
-    }
-    conv_2 = {
-        'out_channels': 16,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1]
-    }
-    conv_3 = {
-        'out_channels': 32,
-        'kernel_size' : [4, 4, 3],
-        'padding'     : [1, 1, 1],
-        'stride'      : [2, 2, 1]
-    }
-    conv_4 = {
-        'out_channels': 32,
-        'kernel_size' : [4, 3, 3],
-        'padding'     : [1, 0, 1],
-        'stride'      : [2, 2, 1]
-    }
-
-    image_channels  = 1
-    conv_args_list  = [conv_1, conv_2, conv_3, conv_4]
-    activ           = nn.LeakyReLU(negative_slope=.2)
-    norm_fn         = nn.InstanceNorm3d
-    code_channels   = 8
-    rezero          = True
-
-    return Encoder(
-        image_channels,
-        conv_args_list,
-        activ,
-        norm_fn,
-        code_channels,
-        rezero
-    )
+if __name__ == "__main__":
+    print("This is the main of bcae_encoder.py")
+    encoder = BCAEEncoder()
+    print(encoder)
