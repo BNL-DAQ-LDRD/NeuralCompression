@@ -53,8 +53,6 @@ class AutoencoderTrainer:
         self.optimizer = optimizer_fn(parameters, **optimizer_kwargs)
         self.scheduler = scheduler_fn(self.optimizer, **scheduler_kwargs)
 
-        self.clf_loss_coef = 20000
-
 
     def encode(self, input_x):
         """
@@ -78,26 +76,11 @@ class AutoencoderTrainer:
 
     def pipe(self, input_x, is_train):
         """
-        encode -> decode -> get losses
-        -> backpropagate error and step optimizer
-        Used for training and validation during training.
+        User should define the pipe function
+        specifically for its output and loss
+        management.
         """
-        self.is_train  = is_train
-        code           = self.encode(input_x)
-        output         = self.decode(code)
-        loss_c, loss_r = self.loss(output, input_x)
-        loss = self.clf_loss_coef * loss_c + loss_r
-        self.clf_loss_coef = (loss_r / loss_c).item()
-
-
-        # Step optimizer
-        if is_train:
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-
-        return loss
-
+        raise NotImplementedError
 
     def handle_epoch_end(self):
         """

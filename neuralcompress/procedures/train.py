@@ -53,26 +53,23 @@ def run_epoch(
     )
     device = trainer.device
 
-    # loss_avg = defaultdict(int)
+    losses_avg = defaultdict(int)
     for i, batch in enumerate(loader):
 
-        loss = trainer.pipe(batch.to(device), is_train)
-
-        # # update the loss average
-        # for key, val in loss_dict.items():
-        #     loss_avg[key] = (loss_avg[key] * i + val) / (i + 1)
+        losses = trainer.pipe(batch.to(device), is_train)
+        for key, val in losses.items():
+            losses_avg[key] = (losses_avg[key] * i + val) / (i + 1)
 
         # update progress bar
         progbar.set_postfix(
-            {'loss': loss},
-            # {key: format_float(val) for key, val in loss_avg.items()},
+            {key: format_float(val) for key, val in losses_avg.items()},
             refresh=False
         )
         progbar.update()
     progbar.close()
     trainer.handle_epoch_end()
 
-    # return loss_avg
+    return losses_avg
 
 
 #pylint:disable=too-many-arguments
@@ -97,7 +94,7 @@ def train(
         run_epoch(train_ldr, trainer, f'{descr} Train',True)
 
         if epoch % valid_freq == 0:
-            run_epoch(valid_ldr, trainer, f'{descr} Valid', False)
+            run_epoch(valid_ldr, trainer, f'\033[96m{descr} Valid\033[0m', False)
 
         if epoch % save_freq == 0:
             print(f'Saving model at epoch {epoch}')
