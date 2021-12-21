@@ -1,36 +1,38 @@
 """
 Generic training functions
 """
-import torch
-
-import numpy as np
+from collections import defaultdict
 import tqdm
 
 from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
-from neuralcompress.procedures.construct_ae import construct_ae
+from neuralcompress.models.bcae_trainer import BCAETrainer
 
 
-def format_float(num):
+def format_float(num, threshold=6):
     """
-    Format scaler print precision.
+    If num is an integer, print the integer.
+    If num is a float point number,
+        - If the integer part has length over the threshold,
+            just print the integer part.
+        - If the integer part has length less than or equal
+            to the threshold, adjust the precision so that
+            totally threshold many number is printed.
     """
     if isinstance(num, int):
         return str(num)
 
-    if num >= 1000:
-        return f'{num:.2f}'
+    int_str = str(int(num))
+    if len(int_str) > threshold:
+        return int_str
 
-    if 1 <= num < 1000:
-        return f'{num:.4f}'
-
-    return f'{num:.6f}'
+    decimal_places = threshold - len(int_str)
+    format_string = f'num:.{decimal_places}f'
+    return f'{{{format_string}}}'.format(num=num)
 
 
 def run_epoch(
     loader,
-    model,
-    optimizer,
-    loss_metrics, # model specific
+    trainer,
     progbar_desc=None,
     is_train=True
 ):
@@ -38,114 +40,101 @@ def run_epoch(
     Run one epoch (generic):
     Input:
         - loader: the input data loader;
-        - model: the model;
-        - optimizer: the optimizer;
-        - loss_and_metric (specific): the function that calculate the loss
-            for backpropagation and metrics for exhibition;
+        - trainer:
         - progbar_desc: progress bar description;
         - is_train: whether it is training;
             If True, backpropogate the loss and step the optimizer.
     Output:
-        A dictionary with key from the metrics returned by the
-        get_loss_metrics function. The value for each key is an array
-        of corresponding values from all batches.
     """
     progbar = tqdm.tqdm(
         desc=progbar_desc,
         total=len(loader),
         dynamic_ncols=True
     )
-    device = next(model.parameters()).device
+    device = trainer.device
 
-    results = {}
-    for batch in loader:
-        batch  = batch.to(device)
+    # loss_avg = defaultdict(int)
+    for i, batch in enumerate(loader):
 
-        # run the model and get loss and metrics
-        if is_train:
-            output = model(batch)
-            loss, metrics = loss_metrics.calculate_loss_metrics(output, batch)
+        loss = trainer.pipe(batch.to(device), is_train)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-        else:
-            with torch.no_grad():
-                output = model(batch)
-                _, metrics = loss_metrics.calculate_loss_metrics(output, batch)
+        # # update the loss average
+        # for key, val in loss_dict.items():
+        #     loss_avg[key] = (loss_avg[key] * i + val) / (i + 1)
 
-        # update the results
-        for key, val in metrics.items():
-            if key in results:
-                results[key].append(val)
-            else:
-                results[key] = [val]
-
-        results_avg = {key: np.mean(val) for key, val in results.items()}
-
+        # update progress bar
         progbar.set_postfix(
-            {key: format_float(val) for key, val in results_avg.items()},
+            {'loss': loss},
+            # {key: format_float(val) for key, val in loss_avg.items()},
             refresh=False
         )
         progbar.update()
     progbar.close()
+    trainer.handle_epoch_end()
 
-    if is_train:
-        loss_metrics.update(results_avg)
-
-    return results
+    # return loss_avg
 
 
-def save(path, model, optimizer, scheduler, epoch=None, zfill_len=0):
-    """
-    Save model, optimizer, and scheduler
-    """
-    if epoch:
-        epoch_str = str(epoch).zfill(zfill_len)
-    else:
-        epoch_str = 'final'
-    torch.save(model.state_dict(),     f'{path}/mod_{epoch_str}.pt')
-    torch.save(optimizer.state_dict(), f'{path}/opt_{epoch_str}.pt')
-    torch.save(scheduler.state_dict(), f'{path}/sch_{epoch_str}.pt')
-
-
-def train(config):
+#pylint:disable=too-many-arguments
+def train(
+    data_path,
+    data_config,
+    trainer,
+    epochs,
+    valid_freq,
+    save_path,
+    save_freq,
+):
     """
     Construct model and train
     """
-    model, optimizer, scheduler, loss_metrics = construct_ae(config)
+    train_ldr, valid_ldr, _ = get_tpc_dataloaders(data_path, **data_config)
 
-    train_loader, valid_loader, test_loader = get_tpc_dataloaders(
-        config['data_path'],
-        **config['data']
-    )
-
-    path   = config['save_path']
-    epochs = config['epochs']
+    epoch_zlen = len(str(epochs))
 
     for epoch in range(1, epochs + 1):
-        train_results = run_epoch(
-            train_loader,
-            model,
-            optimizer,
-            loss_metrics = loss_metrics,
-            progbar_desc = f'Epoch {epoch}/{epochs} Train',
-            is_train     = True
-        )
+        descr = f'Epoch {epoch}/{epochs} '
+        run_epoch(train_ldr, trainer, f'{descr} Train',True)
 
-        scheduler.step()
+        if epoch % valid_freq == 0:
+            run_epoch(valid_ldr, trainer, f'{descr} Valid', False)
 
-        valid_results = run_epoch(
-            valid_loader,
-            model,
-            optimizer,
-            loss_metrics = loss_metrics,
-            progbar_desc = f'Epoch {epoch}/{epochs} Valid',
-            is_train     = False
-        )
-
-        if epoch % config['save_freq'] == 0:
+        if epoch % save_freq == 0:
             print(f'Saving model at epoch {epoch}')
-            save(path, model, optimizer, scheduler, epoch, len(str(epochs)))
+            trainer.save(save_path, epoch, epoch_zlen)
 
-    save(path, model, optimizer, scheduler)
+    trainer.save(save_path)
+
+
+def main():
+    """
+    main
+    """
+    trainer = BCAETrainer()
+
+    data_path   = '/data/datasets/sphenix/highest_framedata_3d/outer'
+    data_config = {
+        'batch_size' : 32,
+        'train_sz'   : 960,
+        'valid_sz'   : 320,
+        'test_sz'    : 320,
+        'is_random'  : True,
+    }
+    epochs      = 2000
+    valid_freq  = 5
+    save_path   = '/home/yhuang2/PROJs/NeuralCompression_results/checkpoints/'
+    save_freq   = 20
+
+    train(
+        data_path   = data_path,
+        data_config = data_config,
+        trainer     = trainer,
+        epochs      = epochs,
+        valid_freq  = valid_freq,
+        save_path   = save_path,
+        save_freq   = save_freq
+    )
+
+
+if __name__ == '__main__':
+    main()

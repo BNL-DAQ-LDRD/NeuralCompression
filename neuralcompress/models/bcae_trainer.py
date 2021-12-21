@@ -3,12 +3,14 @@ BCAE model
 """
 
 import torch
+
 from neuralcompress.models.autoencoder_trainer import AutoencoderTrainer
 from neuralcompress.models.bcae_encoder import BCAEEncoder
 from neuralcompress.models.bcae_decoder import BCAEDecoder
 from neuralcompress.models.bcae_loss import BCAELoss
+# from neuralcompress.models.bcae_loss import get_tpc_losses
 
-
+#pylint: disable=too-few-public-methods
 class BCAETrainer(AutoencoderTrainer):
     """
     bcae trainer
@@ -19,6 +21,7 @@ class BCAETrainer(AutoencoderTrainer):
         # default settings
         encoder        = BCAEEncoder()
         decoder        = BCAEDecoder()
+        # loss           = get_tpc_losses
         loss           = BCAELoss()
         optimizer_info = (torch.optim.AdamW, {'lr' : 0.01})
         scheduler_info = (

@@ -2,6 +2,20 @@
 base model
 """
 import torch
+from torch.nn import init
+
+def winit_func(model, init_gain=.2):
+    """
+    Initialize the network
+    Input:
+    """
+    classname = model.__class__.__name__
+    if (
+        hasattr(model, 'weight') and
+        (classname.find('Conv') != -1 or classname.find('Linear') != -1)
+    ):
+        init.xavier_normal_(model.weight.data, init_gain)
+
 
 class AutoencoderTrainer:
     """
@@ -29,6 +43,8 @@ class AutoencoderTrainer:
         self.device = device
         self.encoder.to(device)
         self.decoder.to(device)
+        winit_func(self.encoder)
+        winit_func(self.decoder)
 
         optimizer_fn, optimizer_kwargs = optimizer_info
         scheduler_fn, scheduler_kwargs = scheduler_info
@@ -36,6 +52,8 @@ class AutoencoderTrainer:
         parameters = list(encoder.parameters()) + list(decoder.parameters())
         self.optimizer = optimizer_fn(parameters, **optimizer_kwargs)
         self.scheduler = scheduler_fn(self.optimizer, **scheduler_kwargs)
+
+        self.clf_loss_coef = 20000
 
 
     def encode(self, input_x):
@@ -64,10 +82,13 @@ class AutoencoderTrainer:
         -> backpropagate error and step optimizer
         Used for training and validation during training.
         """
-        self.is_train = is_train
-        code          = self.encode(input_x)
-        output        = self.decode(code)
-        loss          = self.loss(output, input_x)
+        self.is_train  = is_train
+        code           = self.encode(input_x)
+        output         = self.decode(code)
+        loss_c, loss_r = self.loss(output, input_x)
+        loss = self.clf_loss_coef * loss_c + loss_r
+        self.clf_loss_coef = (loss_r / loss_c).item()
+
 
         # Step optimizer
         if is_train:

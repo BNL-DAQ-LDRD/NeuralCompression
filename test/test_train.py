@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+p!/usr/bin/env python
 from neuralcompress.procedures.train import train
 
 # Construct encoder network
