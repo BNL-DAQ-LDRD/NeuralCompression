@@ -106,6 +106,15 @@ class BCAELoss(nn.Module):
         else:
             self.other_losses_dict = {}
 
+        # bcae training uses dynamic coefficient
+        # in the linear combination of ckassification
+        # and regression loss
+        # Specifically, the coefficient of classification loss
+        # will be scaled up to match that of regression loss
+        # Fidn the formula in the pipe function below.
+        self.clf_loss_coef = 20000
+        self.clf_loss_coef_exp = .5
+
 
     def forward(self, output, target):
         """
@@ -125,6 +134,17 @@ class BCAELoss(nn.Module):
         losses = {}
         losses['clf. loss'] = loss_clf
         losses['reg. loss'] = loss_reg
+
+        # update the coefficient for classification loss
+        # and get the overall loss
+        exp      = self.clf_loss_coef_exp
+        old_coef = self.clf_loss_coef
+        new_coef = (loss_reg / loss_clf).item()
+        ewm_coef = (exp * old_coef + new_coef) / (exp + 1.)
+
+        self.clf_loss_coef = ewm_coef
+        loss               = loss_reg + self.clf_loss_coef * loss_clf
+        losses['loss']     = loss
 
         # in case there are other losses specified
         for loss_type, loss_fn in self.other_losses_dict.items():
