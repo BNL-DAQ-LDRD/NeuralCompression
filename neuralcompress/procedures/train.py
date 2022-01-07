@@ -3,9 +3,7 @@ Generic training functions
 """
 from collections import defaultdict
 import tqdm
-
 from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
-from neuralcompress.models.bcae_trainer import BCAETrainer
 
 
 def format_float(num, threshold=6):
@@ -101,37 +99,3 @@ def train(
             trainer.save(save_path, epoch, epoch_zlen)
 
     trainer.save(save_path)
-
-
-def main():
-    """
-    main
-    """
-    trainer = BCAETrainer()
-
-    data_path   = '/data/datasets/sphenix/highest_framedata_3d/outer'
-    data_config = {
-        'batch_size' : 32,
-        'train_sz'   : 960,
-        'valid_sz'   : 320,
-        'test_sz'    : 320,
-        'is_random'  : True,
-    }
-    epochs      = 2000
-    valid_freq  = 5
-    save_path   = '/home/yhuang2/PROJs/NeuralCompression_results/checkpoints/'
-    save_freq   = 20
-
-    train(
-        data_path   = data_path,
-        data_config = data_config,
-        trainer     = trainer,
-        epochs      = epochs,
-        valid_freq  = valid_freq,
-        save_path   = save_path,
-        save_freq   = save_freq
-    )
-
-
-if __name__ == '__main__':
-    main()
