@@ -8,3 +8,8 @@ Use `test_tpc_dataloader.py` to test the working of TPC dataloader
 1. `python -m test_tpc_dataloader -p [manifest_path] -b 32 --valid_ratio 1 --no-shuffle`
     > Load all examples in the train manifest and split it into equal number of train and valid examples.
     Load all examples in the test manifest. Do not shuffle the dataset.
+
+# Checkpoints
+    We save module pt files in this folder.
+# example-app
+    We test TorchScript in this folder.
