@@ -10,6 +10,9 @@ import torch.nn as nn
 
 from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
 
+DATA_ROOT = '/data/datasets/sphenix/highest_framedata_3d/outer'
+
+
 # pylint: disable=too-few-public-methods
 class TensorContainer(nn.Module):
     """
@@ -22,8 +25,6 @@ class TensorContainer(nn.Module):
             setattr(self, key, value)
 
 
-# data_path   = '/data/datasets/sphenix/highest_framedata_3d/outer'
-
 def main():
     """
     main
@@ -34,7 +35,8 @@ def main():
 
     parser.add_argument(
         '--data_path',
-        required = True,
+        required = False,
+        default  = DATA_ROOT,
         type     = str,
         help     = "The path to data."
     )
@@ -55,11 +57,20 @@ def main():
     )
 
     parser.add_argument(
-        '--train_size',
+        '--data_size',
         required = False,
         default  = 1,
         type     = int,
-        help     = "Number of train frames | default=1."
+        help     = "Number of frames to load | default=1."
+    )
+
+    parser.add_argument(
+        '--partition',
+        required = False,
+        default  = 'test',
+        choices=['train', 'valid', 'test'],
+        type     = str,
+        help     = "partition from which to load the data | default=test."
     )
 
     parser.add_argument(
@@ -71,18 +82,27 @@ def main():
     args = parser.parse_args()
 
     data_config = {
-        'batch_size' : args.train_size,
-        'train_sz'   : args.train_size,
+        'batch_size' : args.data_size,
+        'train_sz'   : 0,
         'valid_sz'   : 0,
         'test_sz'    : 0,
         'is_random'  : args.random,
     }
+    partition = args.partition
+    data_config[f'{partition}_sz'] = args.data_size
 
     data_path = Path(args.data_path)
     assert data_path.exists(), f'{data_path} does not exist!'
 
-    train_loader, _, _ = get_tpc_dataloaders(data_path, **data_config)
-    data = next(iter(train_loader))
+    loaders = get_tpc_dataloaders(data_path, **data_config)
+    if partition == 'train':
+        loader = loaders[0]
+    elif partition == 'valid':
+        loader = loaders[1]
+    else:
+        loader = loaders[2]
+
+    data = next(iter(loader))
     print(f'shape of tpc data = {data.shape}')
 
     container = TensorContainer({'data': data})
