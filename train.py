@@ -1,8 +1,17 @@
+"""
+Train BCAE models
+This version of BCAE model is designed for
+the outer layer group of TPC Au+Au collision.
+
+When run the wavelet machine, please use
+> `data_path = '/data/datasets/sphenix/highest_framedata_3d/outer'`
+
+"""
 from neuralcompress.procedures.train import train
 from neuralcompress.models.bcae_trainer import BCAETrainer
 
 
-data_path   = '/data/datasets/sphenix/highest_framedata_3d/outer'
+data_path   = 'datasets'
 data_config = {
     'batch_size' : 32,
     'train_sz'   : 960,
@@ -12,7 +21,7 @@ data_config = {
 }
 epochs      = 2000
 valid_freq  = 5
-save_path   = '/home/yhuang2/PROJs/NeuralCompression_results/checkpoints/'
+save_path   = 'checkpoints'
 save_freq   = 20
 
 train(
