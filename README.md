@@ -37,3 +37,4 @@ When running the wavelet machine, please use
 # TO-DO:
 - [ ] Add `kwargs` to bcae_trainer so it can accept parameters to the base class;
 - [ ] Add the function to locate biggest epoch so that when `--epoch` is not given, the script can locate the most trained modeles.
+- [ ] Currently, the tpc_dataset API is designed for model training (it needs lists of partition), but we need one designed for deployment later.
