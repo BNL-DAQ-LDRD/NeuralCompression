@@ -19,7 +19,6 @@ def main():
 
     parser.add_argument(
         '--checkpoint_path',
-        '-c',
         required=True,
         type=str,
         help="The path to the checkpoints."
@@ -27,7 +26,6 @@ def main():
 
     parser.add_argument(
         '--epoch',
-        '-e',
         required=True,
         type=int,
         help="The epoch to load."
@@ -35,7 +33,6 @@ def main():
 
     parser.add_argument(
         '--save_path',
-        '-s',
         required=True,
         type=str,
         help="The path to save the scripted encoder and decoder."
@@ -43,7 +40,6 @@ def main():
 
     parser.add_argument(
         '--prefix',
-        '-p',
         default='bcae',
         required=False,
         type=str,
