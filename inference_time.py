@@ -1,41 +1,27 @@
 """
-Inference
-Usage example:
-   - `python inference.py --data_size 32 --batch_size 8 --partition test
-      --random --checkpoint_path ~/PROJs/NeuralCompression_results/checkpoints/
-      --epoch 440 --save_path inference_results --half`
+Inference time study
 """
-import argparse
 from pathlib import Path
 import tqdm
 import numpy as np
-
-import torch
-
 from neuralcompress.utils.load_bcae_models import load_bcae_encoder
 from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
+import torch
+import torch.backends
+cudnn.benchmark = True
 
+# dataloader number of workers and pin_memory
+# pre-fetching = 1 or 2
 
 
 DATA_ROOT = '/data/datasets/sphenix/highest_framedata_3d/outer'
 
 def inference():
 
-    """
-    Inference
-    """
-
     parser = argparse.ArgumentParser(
         description="Run BCAE inference"
     )
 
-    parser.add_argument(
-        '--data_path',
-        required = False,
-        default  = DATA_ROOT,
-        type     = str,
-        help     = "The path to data."
-    )
 
     parser.add_argument(
         '--device',
@@ -103,6 +89,8 @@ def inference():
         action = 'store_true',
         help   = "Whether to save the output with half precision."
     )
+
+
     parser.add_argument(
         '--prefix',
         required = False,
@@ -145,32 +133,49 @@ def inference():
     encoder.to(args.device)
 
     # run inference
-    progbar = tqdm.tqdm(
-        desc="BCAE Inference",
-        total=len(loader),
-        dynamic_ncols=True
-    )
-    outputs = []
+    # progbar = tqdm.tqdm(
+    #     desc="BCAE Inference",
+    #     total=len(loader),
+    #     dynamic_ncols=True
+    # )
+    # outputs = []
+
+    res = {}
+
     with torch.no_grad():
-        for batch in loader:
+        for i, batch in enumerate(loader):
             output = encoder(batch.to(args.device))
-            outputs.append(output.detach().cpu().numpy())
-            progbar.update()
-        progbar.close()
 
-    save_path = Path(args.save_path)
-    if not save_path.exists():
-        save_path.mkdir(parents=True)
+        res['    memory allocated (MB)'.strip()] = torch.cuda.memory_allocated()/1024/1024
+        res['    memory cached    (MB)'.strip()] = torch.cuda.memory_cached()/1024/1024
+        res['max memory allocated (MB)'.strip()] = torch.cuda.max_memory_allocated()/1024/1024
+        res['max memory cached    (MB)'.strip()] = torch.cuda.max_memory_cached()/1024/1024
 
-    # save result
-    counter = 0
-    for output in outputs:
-        for frame in output:
-            if args.half:
-                frame = frame.astype('float16')
-            fname = save_path/f'{args.prefix}_{counter}'
-            np.savez(fname, data=frame)
-            counter += 1
 
-if  __name__ == '__main__':
-    inference()
+        time0 = time()
+        T = 10
+        for _ in range(T):
+            for i, batch in enumerate(loader):
+                output = encoder(batch.to(args.device))
+                # outputs.append(output.detach().cpu().numpy())
+                # progbar.update()
+            # progbar.close()
+        torch.cuda.synchronize()
+        time1 = time()
+
+    # save_path = Path(args.save_path)
+    # if not save_path.exists():
+    #     save_path.mkdir(parents=True)
+
+    # # save result
+    # counter = 0
+    # for output in outputs:
+    #     for frame in output:
+    #         if args.half:
+    #             frame = frame.astype('float16')
+    #         fname = save_path/f'{args.prefix}_{counter}'
+    #         np.savez(fname, data=frame)
+    #         counter += 1
+
+if _# _name__ == '__main__':
+    # inference()
