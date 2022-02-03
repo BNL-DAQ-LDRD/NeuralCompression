@@ -7,7 +7,7 @@
 
 ## parameters:
 - positional arguments:
-  `checkpoint`:          The path to the encoder pt file.
+  - `checkpoint`:          The path to the encoder pt file.
 
 - optional arguments:
   - `--num_runs`:        Number of runs to calculate the run-time. (default=10)
