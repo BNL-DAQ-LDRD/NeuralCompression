@@ -1,0 +1,14 @@
+,1
+data_size,512
+batch_size,16
+num_runs,10
+pin_memory,True
+num_workers,2
+prefetch_factor,1
+benchmark,True
+memory allocated (MB),2.20361328125
+memory reserved  (MB),614.0
+max memory allocated (MB),518.89208984375
+max memory reserved  (MB),614.0
+inference time per hundred frames,0.27974024415016174
+std,0.01070645570422938

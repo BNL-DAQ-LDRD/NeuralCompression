@@ -1,0 +1,11 @@
+,1
+data_size,1024
+batch_size,4
+num_runs,10
+benchmark,False
+memory allocated (MB),2989.37451171875
+memory reserved  (MB),3110.0
+max memory allocated (MB),3085.37548828125
+max memory reserved  (MB),3110.0
+frames per second,607.7599316688678
+std,6.588305277727892
