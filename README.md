@@ -15,9 +15,25 @@ When running the wavelet machine, please use
   - `--save_path`: The path to save the scripted encoder and decoder.
   - `--prefix`: Prefix to the filename of the scripted encoder and decoder | default=bcae.
 
+# Inference
+- Usage examples:
+    - `python inference.py --data_size 32 --batch_size 8 --partition test --random --checkpoint_path ./checkpoints/ --epoch 440 --save_path inference_results --half`
 
-# Inference and benchmarking
+- parameters:
+    - `--data_path`: The path to data.
+    - `--device`:    Choose from {cuda,cpu}. The device to run the inference | default=cuda.
+    - `--data_size`: Number of frames to load | default=1.
+    - `--batch_size`: Batch size | default=1.
+    - `--partition`: Choose from {train,valid,test} partition from which to load the data | default=test.
+    - `--random`: Whether to get a random sample.
+    - `--checkpoint_path`: The path to the pretrained checkpoints.
+    - `--epoch`: The epoch of the pretrained checkpoints to load.
+    - `--save_path`: The path to save output tensor.
+    - `--half`: Whether to save the output with half precision.
+    - `--prefix`: Output file prefix | default=output.
 
+
+# GPU benchmarking
 ## Usage example:
     - python benchmark/gpu_inference.py ~/PROJs/NeuralCompression_results/checkpoints/encoder_0440.pt --with_loader --data_root /data/datasets/sphenix/highest_framedata_3d/outer/ --num_workers 8 --half_precision
     - python benchmark/gpu_inference.py ~/PROJs/NeuralCompression_results/checkpoints/encoder_0440.pt --with_loader --data_root /data/datasets/sphenix/highest_framedata_3d/outer/ --num_workers 8 --half_precision --data_size 1024 --batch_size 8
