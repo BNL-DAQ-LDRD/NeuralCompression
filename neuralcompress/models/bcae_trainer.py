@@ -21,7 +21,7 @@ class BCAETrainer(AutoencoderTrainer):
         encoder        = BCAEEncoder()
         decoder        = BCAEDecoder()
         loss           = BCAELoss()
-        optimizer_info = (torch.optim.AdamW, {'lr' : 0.01})
+        optimizer_info = (torch.optim.AdamW, {'lr' : 1e-3})
         scheduler_info = (
             torch.optim.lr_scheduler.StepLR,
             {
