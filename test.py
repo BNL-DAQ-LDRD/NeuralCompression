@@ -18,7 +18,7 @@ data_config = {
     'batch_size' : 4,
     'train_sz'   : 0,
     'valid_sz'   : 0,
-    'test_sz'    : 8, # there are only 32 data files contained
+    'test_sz'    : 8, # there are only 8 data files contained
     'is_random'  : True,
 }
 _, _, loader = get_tpc_dataloaders(data_path, **data_config)
