@@ -102,13 +102,3 @@ class AutoencoderTrainer:
         torch.save(self.decoder.state_dict(), f'{path}/decoder_{epoch_str}.pt')
         torch.save(self.optimizer.state_dict(), f'{path}/opt_{epoch_str}.pt')
         torch.save(self.scheduler.state_dict(), f'{path}/sch_{epoch_str}.pt')
-
-
-    def script(self, path):
-        """
-        scripting
-        """
-        encoder_scripted = torch.jit.script(self.encoder)
-        decoder_scripted = torch.jit.script(self.decoder)
-        encoder_scripted.save(f'{path}/encoder.pt')
-        decoder_scripted.save(f'{path}/decoder.pt')
