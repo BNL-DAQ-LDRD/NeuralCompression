@@ -153,35 +153,41 @@ def get_tpc_dataloaders(
     """
     Get TPC train, valid, and test dataloaders
     """
-    test_manifest = Path(manifest_path)/'test.txt'
-    assert test_manifest.exists(), \
-        f'{test_manifest} does not exist.'
-    test_loader = get_tpc_test_dataloader(
-        test_manifest,
-        batch_size,
-        test_sz         = test_sz,
-        is_random       = is_random,
-        seed            = seed,
-        shuffle         = shuffle,
-        num_workers     = num_workers,
-        pin_memory      = pin_memory,
-        prefetch_factor = prefetch_factor
-    )
+    if test_sz > 0:
+        test_manifest = Path(manifest_path)/'test.txt'
+        assert test_manifest.exists(), \
+            f'{test_manifest} does not exist.'
+        test_loader = get_tpc_test_dataloader(
+            test_manifest,
+            batch_size,
+            test_sz         = test_sz,
+            is_random       = is_random,
+            seed            = seed,
+            shuffle         = shuffle,
+            num_workers     = num_workers,
+            pin_memory      = pin_memory,
+            prefetch_factor = prefetch_factor
+        )
+    else:
+        test_loader = None
 
-    train_manifest = Path(manifest_path)/'train.txt'
-    assert test_manifest.exists(), \
-        f'{train_manifest} does not exist.'
-    train_loader, valid_loader = get_tpc_train_valid_dataloaders(
-        train_manifest,
-        batch_size,
-        train_sz        = train_sz,
-        valid_sz        = valid_sz,
-        valid_ratio     = valid_ratio,
-        is_random       = is_random,
-        seed            = seed,
-        shuffle         = shuffle,
-        num_workers     = num_workers,
-        pin_memory      = pin_memory,
-        prefetch_factor = prefetch_factor
-    )
+    if train_sz > 0:
+        train_manifest = Path(manifest_path)/'train.txt'
+        assert test_manifest.exists(), \
+            f'{train_manifest} does not exist.'
+        train_loader, valid_loader = get_tpc_train_valid_dataloaders(
+            train_manifest,
+            batch_size,
+            train_sz        = train_sz,
+            valid_sz        = valid_sz,
+            valid_ratio     = valid_ratio,
+            is_random       = is_random,
+            seed            = seed,
+            shuffle         = shuffle,
+            num_workers     = num_workers,
+            pin_memory      = pin_memory,
+            prefetch_factor = prefetch_factor
+        )
+    else:
+        train_loader, valid_loader = None, None
     return train_loader, valid_loader, test_loader
