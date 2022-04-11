@@ -1,8 +1,8 @@
-data/outer_12-2_10-0_AuAu200_170kHz_10C_Iter2_3116.xml_TPCMLDataInterface_4.npy
-data/outer_12-2_2-0_AuAu200_170kHz_10C_Iter2_3174.xml_TPCMLDataInterface_7.npy
-data/outer_12-2_4-0_AuAu200_170kHz_10C_Iter2_3068.xml_TPCMLDataInterface_9.npy
-data/outer_12-2_8-1_AuAu200_170kHz_10C_Iter2_3096.xml_TPCMLDataInterface_8.npy
-data/outer_12-2_10-1_AuAu200_170kHz_10C_Iter2_3073.xml_TPCMLDataInterface_2.npy
-data/outer_12-2_2-0_AuAu200_170kHz_10C_Iter2_3093.xml_TPCMLDataInterface_8.npy
-data/outer_12-2_8-1_AuAu200_170kHz_10C_Iter2_3094.xml_TPCMLDataInterface_5.npy
-data/outer_12-2_0-1_AuAu200_170kHz_10C_Iter2_3143.xml_TPCMLDataInterface_7.npy
+data/sample_tpc_data_0.npy
+data/sample_tpc_data_1.npy
+data/sample_tpc_data_2.npy
+data/sample_tpc_data_3.npy
+data/sample_tpc_data_4.npy
+data/sample_tpc_data_5.npy
+data/sample_tpc_data_6.npy
+data/sample_tpc_data_7.npy
