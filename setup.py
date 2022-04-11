@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(
     name = "NeuralCompress",
-    version = "0.0.1.dev",
-    author = "TBD",
+    version = "0.0.1",
+    author = "Yi Huang",
     author_email = "TBD",
     description = ("Implementation of neural compression"),
     license = "MIT",
@@ -14,7 +14,8 @@ setup(
     install_requires=[
         "torch",
         "numpy",
-        "pandas"
+        "pandas",
+        "tqdm"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
