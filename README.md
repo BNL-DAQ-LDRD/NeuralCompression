@@ -15,6 +15,10 @@ When running the wavelet machine, please use
   - `--save_path`: The path to save the scripted encoder and decoder.
   - `--prefix`: Prefix to the filename of the scripted encoder and decoder | default=bcae.
 
+# Test
+For a simple test, I copyied eight frames to the folder `data` and pretrained encoder and decoder to the folder `checkpoints`. To run test on the frames and with the pretrained models, run `python test.py`. The result will be saved to the folder `results`.
+
+
 # Inference
 - Usage examples:
     - `python inference.py --data_size 32 --batch_size 8 --partition test --random --checkpoint_path ./checkpoints/ --epoch 440 --save_path inference_results --half`
