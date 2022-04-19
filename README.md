@@ -5,6 +5,7 @@
 - A pretrained encoder and decoder `.pth` files are in `./checkpoints`.
 - To run the pretrained models on sample data: `python test.py`.
 - The output will be saved to the folder `./results`.
+- To compare with pre-generated sample output, untar the `./data/sample_test_results.tar.gz`.
 
 ## Training
 
