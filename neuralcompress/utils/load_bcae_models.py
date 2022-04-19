@@ -20,7 +20,7 @@ def locate(path, epoch, model_type):
     """
     path         = Path(path)
     model_fnames = path.glob(f'{model_type}*')
-    model_fname  = [f for f in model_fnames if int(f.stem.split('_')[-1]) == epoch]
+    model_fname  = [f for f in model_fnames if f.stem.split('_')[-1] == str(epoch)]
 
     assert len(model_fname) == 1, "non existent or ambiguous model filename"
 
