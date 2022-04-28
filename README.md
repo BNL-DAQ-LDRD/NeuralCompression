@@ -1,7 +1,7 @@
 ## Test
 
 - A sample time projection chamber (TPC) frame data are prepared in `./data` for testing. 
-- First to uncompress sample data tar ball to `npy` files in `./data` with `tar xfvz sample_data.tar.gz`.
+- First to uncompress sample data tar ball to `npy` files in `./data` with `tar xfvz samples.tgz`.
 - A pretrained encoder and decoder `.pth` files are in `./checkpoints`.
 - To run the pretrained models on sample data: `python test.py`.
 - The output will be saved to the folder `./results`.
