@@ -15,7 +15,6 @@ from neuralcompress.utils.load_bcae_models import (
 from neuralcompress.models.bcae_combine import BCAECombine
 
 
-
 # =================== Compress and decompress ===================
 
 # Load data
@@ -73,7 +72,6 @@ for comp, decomp in zip(compressed, decompressed):
         np.savez(save_path/f'compressed_{counter}', data=en)
         np.savez(save_path/f'decompressed_{counter}', data=de)
         counter += 1
-
 
 
 #=================== Load result and compute metrices ===================
