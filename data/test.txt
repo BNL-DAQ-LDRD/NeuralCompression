@@ -1,8 +1,0 @@
-data/sample_tpc_data_0.npy
-data/sample_tpc_data_1.npy
-data/sample_tpc_data_2.npy
-data/sample_tpc_data_3.npy
-data/sample_tpc_data_4.npy
-data/sample_tpc_data_5.npy
-data/sample_tpc_data_6.npy
-data/sample_tpc_data_7.npy
