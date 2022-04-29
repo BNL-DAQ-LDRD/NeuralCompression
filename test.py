@@ -79,7 +79,6 @@ for i, (comp, decomp) in enumerate(zip(compressed, decompressed)):
     np.save(save_path/f'decompressed_{i}', decomp)
 
 
-
 ###################################################################
 # =================== Sanity check with metrics ===================
 print('\n============== Recontruction Errors ===============')
