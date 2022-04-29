@@ -1,9 +1,14 @@
 ## Test
-
-- A sample time projection chamber (TPC) frame data are prepared in `./data` for testing. 
-- First to uncompress sample data tar ball to `npy` files in `./data` with `tar xfvz sample_data.tar.gz`.
-- A pretrained encoder and decoder `.pth` files are in `./checkpoints`.
-- To run the pretrained models on sample data: `python test.py`.
+- In the folder `./data`, run `tar xfvz sample.tgz` to get:
+    - sample time projection chamber (TPC) frame data (`sample_0.npy` to `sample_7.npy`);
+    - manifest file `test.txt` used for loading sample data;
+    - cached compressed data (`compressed_0.npy` to `compressed_7.npy`);
+    - cached decompressed data (`decompressed_0.npy` to `decompressed_7.npy`);
+    - expected reconstruction errors (`sample_metric_results.csv`)
+  
+  The cached network output and expected reconstruction error file are used for benchmarking. 
+- Pretrained encoder and decoder `.pth` files are saved in `./checkpoints`.
+- To run the pretrained model and compare the result, run `python test.py`.
 - The output will be saved to the folder `./results`.
 
 ## Training
@@ -21,6 +26,7 @@ One can modified the parameters inside `train.py`.
   - `--epoch`: The epoch of the pretrained checkpoints to load.
   - `--save_path`: The path to save the scripted encoder and decoder.
   - `--prefix`: Prefix to the filename of the scripted encoder and decoder | default=bcae.
+
 
 ## Inference
 

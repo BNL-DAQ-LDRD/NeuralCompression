@@ -8,12 +8,14 @@ class BCAECombine(nn.Module):
     """
     combine the classification and regression result
     """
-    def __init__(self):
+    def __init__(self, threshold=.5):
+
         super().__init__()
 
         # default settings
         self.transform     = lambda x: torch.exp(x) * 6 + 64
-        self.clf_threshold = .5
+        self.clf_threshold = threshold
+
 
     def forward(self, output):
         """
