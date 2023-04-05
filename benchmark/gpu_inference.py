@@ -15,7 +15,7 @@ from neuralcompress.utils.tpc_dataloader import get_tpc_dataloaders
 # when running on wavelet, please use the following data root
 # DATA_ROOT = '/data/datasets/sphenix/highest_framedata_3d/outer'
 
-def inference():
+def parse_args():
     """
     inference time study
     """
@@ -120,7 +120,20 @@ def inference():
     )
 
     args = parser.parse_args()
+    return args
 
+
+def collect_gpu_memory():
+    res = {}
+    megabytes = 1024 ** 2
+    res['memory allocated (MiB)']     = torch.cuda.memory_allocated()/megabytes
+    res['memory reserved  (MiB)']     = torch.cuda.memory_reserved()/megabytes
+    res['max memory allocated (MiB)'] = torch.cuda.max_memory_allocated()/megabytes
+    res['max memory reserved  (MiB)'] = torch.cuda.max_memory_reserved()/megabytes
+    return res
+
+def inference():
+    args = parse_args()
 
     torch.backends.cudnn.benchmark = args.benchmark
 
@@ -158,52 +171,57 @@ def inference():
     # Run inference and save results
     res = vars(args).copy()
     num_runs = args.num_runs
-    megabytes = 1024 ** 2
     records = []
 
     if args.half_precision:
         with torch.cuda.amp.autocast():
             with torch.no_grad():
-                for batch in data:
-                    if args.with_loader:
+                if args.with_loader:
+                    for batch in data:
                         batch = batch.to('cuda')
-                    _ = encoder(batch)
+                        _ = encoder(batch)
+                else:
+                    for batch in data:
+                        _ = encoder(batch)
 
-                res['memory allocated (MB)']     = torch.cuda.memory_allocated()/megabytes
-                res['memory reserved  (MB)']     = torch.cuda.memory_reserved()/megabytes
-                res['max memory allocated (MB)'] = torch.cuda.max_memory_allocated()/megabytes
-                res['max memory reserved  (MB)'] = torch.cuda.max_memory_reserved()/megabytes
+                res.update(collect_gpu_memory())
 
                 time0 = time()
                 for _ in range(num_runs):
                     time_sub = time()
-                    for batch in data:
-                        if args.with_loader:
+                    if args.with_loader:
+                        for batch in data:
                             batch = batch.to('cuda')
-                        _ = encoder(batch)
+                            _ = encoder(batch)
+                    else:
+                        for batch in data:
+                            _ = encoder(batch)
                     torch.cuda.synchronize()
                     records.append(time() - time_sub)
                 torch.cuda.synchronize()
                 time1 = time()
     else:
         with torch.no_grad():
-            for batch in data:
-                if args.with_loader:
+            if args.with_loader:
+                for batch in data:
                     batch = batch.to('cuda')
-                _ = encoder(batch)
+                    _ = encoder(batch)
+            else:
+                for batch in data:
+                    _ = encoder(batch)
 
-            res['memory allocated (MB)']     = torch.cuda.memory_allocated()/megabytes
-            res['memory reserved  (MB)']     = torch.cuda.memory_reserved()/megabytes
-            res['max memory allocated (MB)'] = torch.cuda.max_memory_allocated()/megabytes
-            res['max memory reserved  (MB)'] = torch.cuda.max_memory_reserved()/megabytes
+            res.update(collect_gpu_memory())
 
             time0 = time()
             for _ in range(num_runs):
                 time_sub = time()
-                for batch in data:
-                    if args.with_loader:
+                if args.with_loader:
+                    for batch in data:
                         batch = batch.to('cuda')
-                    _ = encoder(batch)
+                        _ = encoder(batch)
+                else:
+                    for batch in data:
+                        _ = encoder(batch)
                 torch.cuda.synchronize()
                 records.append(time() - time_sub)
             torch.cuda.synchronize()
