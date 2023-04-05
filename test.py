@@ -1,5 +1,10 @@
+"""
+Test computation fluctuation on eight saved frames.
+"""
 from pathlib import Path
 from collections import defaultdict
+from time import perf_counter
+import argparse
 import tqdm
 import numpy as np
 import pandas as pd
@@ -13,6 +18,16 @@ from neuralcompress.utils.load_bcae_models import (
 )
 
 from neuralcompress.models.bcae_combine import BCAECombine
+
+
+
+parser = argparse.ArgumentParser(
+    description='Test computation fluctuation on eight saved frames'
+)
+parser.add_argument('--half',
+                    action='store_true',
+                    help='run half-precision inference')
+args = parser.parse_args()
 
 
 #################################################################
@@ -29,32 +44,43 @@ data_config = {
 }
 _, _, loader = get_tpc_dataloaders(data_path, **data_config)
 
-device = 'cuda'
+DEVICE = 'cuda'
 
 # Load encoder
 checkpoint_path = Path('checkpoints')
-epoch           = 2000
-encoder = load_bcae_encoder(checkpoint_path, epoch)
-decoder = load_bcae_decoder(checkpoint_path, epoch)
-encoder.to(device)
-decoder.to(device)
+EPOCH = 2000
+encoder = load_bcae_encoder(checkpoint_path, EPOCH)
+decoder = load_bcae_decoder(checkpoint_path, EPOCH)
+encoder.to(DEVICE)
+decoder.to(DEVICE)
 
 # run compression and decompression
+
 combine = BCAECombine()
+
 originals    = []
 compressed   = []
 decompressed = []
+
 progbar = tqdm.tqdm(
     desc="BCAE compression and decompression",
     total=len(loader),
     dynamic_ncols=True
 )
-with torch.no_grad():
-    for batch in loader:
-        batch  = batch.to(device)
 
-        comp   = encoder(batch)
-        comp   = comp.half() # we save the compressed result as half float
+t_start = perf_counter()
+with torch.no_grad():
+
+    for batch in loader:
+        batch  = batch.to(DEVICE)
+
+        if args.half:
+            with torch.cuda.amp.autocast():
+                comp = encoder(batch)
+        else:
+            # we save the compressed result as half float
+            comp = encoder(batch).half()
+
         decomp = combine(decoder(comp.float()))
 
         originals.append(batch.detach().cpu().numpy())
@@ -62,7 +88,12 @@ with torch.no_grad():
         decompressed.append(decomp.detach().cpu().numpy())
 
         progbar.update()
+
     progbar.close()
+
+t_stop = perf_counter()
+time_elapsed = t_stop - t_start
+
 
 # reshape the tensors
 originals    = np.squeeze(np.vstack(originals))
@@ -128,3 +159,7 @@ for i, (decomp, fname_decomp) in enumerate(zip(decompressed, fnames_decomp)):
     diff = np.abs(decomp - decomp_cached)
     mse  = np.mean(diff * diff)
     print(f'Sample {i} decompressed: MSE = {mse:.3e}')
+
+
+##########################################################################
+print(f'time elapsed = {time_elapsed: .5f}')
