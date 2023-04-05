@@ -173,7 +173,7 @@ def get_tpc_dataloaders(
 
     if train_sz > 0:
         train_manifest = Path(manifest_path)/'train.txt'
-        assert test_manifest.exists(), \
+        assert train_manifest.exists(), \
             f'{train_manifest} does not exist.'
         train_loader, valid_loader = get_tpc_train_valid_dataloaders(
             train_manifest,
