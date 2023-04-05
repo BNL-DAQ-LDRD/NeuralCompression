@@ -20,7 +20,6 @@ from neuralcompress.utils.load_bcae_models import (
 from neuralcompress.models.bcae_combine import BCAECombine
 
 
-
 parser = argparse.ArgumentParser(
     description='Test computation fluctuation on eight saved frames'
 )
@@ -28,7 +27,6 @@ parser.add_argument('--half',
                     action='store_true',
                     help='run half-precision inference')
 args = parser.parse_args()
-
 
 #################################################################
 # =================== Compress and decompress ===================
@@ -69,6 +67,7 @@ progbar = tqdm.tqdm(
 )
 
 t_start = perf_counter()
+
 with torch.no_grad():
 
     for batch in loader:
@@ -91,9 +90,9 @@ with torch.no_grad():
 
     progbar.close()
 
+
 t_stop = perf_counter()
 time_elapsed = t_stop - t_start
-
 
 # reshape the tensors
 originals    = np.squeeze(np.vstack(originals))
@@ -159,7 +158,6 @@ for i, (decomp, fname_decomp) in enumerate(zip(decompressed, fnames_decomp)):
     diff = np.abs(decomp - decomp_cached)
     mse  = np.mean(diff * diff)
     print(f'Sample {i} decompressed: MSE = {mse:.3e}')
-
 
 ##########################################################################
 print(f'time elapsed = {time_elapsed: .5f}')
