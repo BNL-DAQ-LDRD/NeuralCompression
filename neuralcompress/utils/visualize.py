@@ -14,14 +14,14 @@ def plot_losses(train_losses, valid_losses, test_loss=None, save_fname=None):
     """
     To be made more flexible.
     """
-    
+
     train_losses_classification, train_losses_regression, _ = np.array(train_losses).T
     valid_losses_classification, valid_losses_regression, _ = np.array(valid_losses).T
     if test_loss is not None:
         test_loss_classification, test_loss_regression = test_loss
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 8), sharey=False)
-    
+
     # Classification
     axes[0][0].plot(train_losses_classification, label='train', color='teal')
     axes[0][1].plot(valid_losses_classification, label='validation', color='teal')
@@ -49,12 +49,12 @@ def plot_losses(train_losses, valid_losses, test_loss=None, save_fname=None):
 
     fig.subplots_adjust(hspace=0.2)
     fig.tight_layout()
-    
+
     if save_fname is not None:
         fig.savefig(save_fname, transparent=False, bbox_inches='tight', dpi=200)
     plt.show()
     plt.close(fig)
-    
+
 
 def plot_histograms(X, Y_c, Y, M=1000000, save_fname=None):
     """
@@ -63,7 +63,7 @@ def plot_histograms(X, Y_c, Y, M=1000000, save_fname=None):
     Y_c: flattened predicted classes
     Y: flattend predicted values
     """
-    
+
     overall_mse = ((Y - X) ** 2).mean()
     print(f'overall mean squared error = {overall_mse: .3f}')
     mse = np.sum((Y - X)**2 * (X > 0)) / np.sum(X > 0)
@@ -72,11 +72,11 @@ def plot_histograms(X, Y_c, Y, M=1000000, save_fname=None):
     if len(X) > M:
         indices = np.random.choice(len(X), M, replace=False)
         X, Y_c, Y = X[indices], Y_c[indices], Y[indices]
-                    
+
     # Plot
     fig, axes = plt.subplots(1, 3, figsize=(20, 4), sharey=False)
     facecolor, edgecolor = 'royalblue', 'aliceblue'
-    
+
     axes[0].hist(Y_c, bins=np.linspace(0, 1, 51), label='predicted class', facecolor=facecolor, edgecolor=edgecolor, zorder=3, alpha=.8)
     axes[1].hist(np.log2(X + 1), bins=np.linspace(0, 10, 51), label='ground truth', facecolor=facecolor, edgecolor=edgecolor, zorder=3, alpha=.8)
     axes[2].hist(np.log2(Y + 1), bins=np.linspace(0, 10, 51), label='decompressed', facecolor=facecolor, edgecolor=edgecolor, zorder=3, alpha=.8)
@@ -86,7 +86,7 @@ def plot_histograms(X, Y_c, Y, M=1000000, save_fname=None):
         ax.set_ylim(1e2, 1e6)
         ax.tick_params(axis='both', labelsize=15)
         ax.legend(fontsize=18)
-    
+
     fig.tight_layout()
     fig.subplots_adjust(wspace=.1)
     if save_fname is not None:
@@ -104,7 +104,7 @@ def plot_errors(x, y_c, save_fname=None):
 
     X_c = torch.log2(x + 1).cpu().detach().numpy().flatten() > 1
     Y_c = y_c.cpu().detach().numpy().flatten()
-    
+
     pos = X_c.sum()
     neg = len(X_c) - pos
 
@@ -132,16 +132,16 @@ def plot_errors(x, y_c, save_fname=None):
     ax.tick_params(axis='both', labelsize=12)
     plt.grid('True')
     plt.title('Errors', fontsize=18)
-    
+
     fig.tight_layout()
     if save_fname is not None:
         fig.savefig(save_fname, transparent=False, bbox_inches='tight', dpi=200)
     plt.show()
     plt.close(fig)
-    
+
     return pd.DataFrame(data={'FNR': FNR, 'FPR': FPR, 'ERR': ERR, 'threshold': T})
-        
-        
+
+
 def plot_histogram_2d(X_log, Y_log, M=1000000, gamma=.2, save_fname=None):
 
     # Sampling for speedy plot
@@ -150,18 +150,18 @@ def plot_histogram_2d(X_log, Y_log, M=1000000, gamma=.2, save_fname=None):
         X, Y = X_log[indices], Y_log[indices]
     else:
         X, Y = X_log, Y_log
-        
+
     data = np.array([X, Y]).T
-    
+
     bins_x = np.linspace(6, 10, 81)
     y_bound = int(Y.max() * 10 + .5) / 10 + 0.05
     bins_y = np.arange(6, y_bound, .05)
-    
+
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
     h, xedges, yedges, _ = ax.hist2d(
-        data[:, 0], 
-        data[:, 1], 
-        bins=[bins_x, bins_y], 
+        data[:, 0],
+        data[:, 1],
+        bins=[bins_x, bins_y],
         norm=mcolors.PowerNorm(gamma)
     )
     ax.set_aspect(1)
@@ -178,9 +178,9 @@ def plot_histogram_2d(X_log, Y_log, M=1000000, gamma=.2, save_fname=None):
         fig.savefig(save_fname, transparent=False, bbox_inches='tight', dpi=200)
     plt.show()
     plt.close(fig)
-    
+
     return data, h, xedges, yedges
-    
+
 
 def visualize_2d(image_original, image_recovered, frame_axis=0, max_frames=5, figure_width=10, cmap='gray', save_fname=None, aspect=None):
     """
@@ -191,11 +191,11 @@ def visualize_2d(image_original, image_recovered, frame_axis=0, max_frames=5, fi
 
     shape = image_original.shape
     frame_indices = np.random.choice(shape[frame_axis], max_frames)
-    
+
     image_original = image_original.cpu().detach().numpy()
     image_original = np.log2(image_original + 1)
     image_original = np.moveaxis(image_original, frame_axis, 0)
-    
+
     image_recovered = image_recovered.cpu().detach().numpy()
     image_recovered = np.log2(image_recovered + 1)
     image_recovered = np.moveaxis(image_recovered, frame_axis, 0)
@@ -205,9 +205,9 @@ def visualize_2d(image_original, image_recovered, frame_axis=0, max_frames=5, fi
         image_original = np.moveaxis(image_original, 1, 2)
         image_recovered = np.moveaxis(image_recovered, 1, 2)
         axis_labels = axis_labels[::-1]
-    
+
     max_frames = min(image_original.shape[0], max_frames)
-    
+
     h, w = image_original.shape[1:]
     if aspect is None:
         aspect = 1 - .031 * w / h
@@ -215,8 +215,8 @@ def visualize_2d(image_original, image_recovered, frame_axis=0, max_frames=5, fi
     figsize = (figure_width, figure_width * (H / W))
     fig, axes = plt.subplots(max_frames, 2, figsize=figsize, sharex=True, sharey=True)
     # print(type(image_recovered[frame_indices[0]][0, 0]))
-    
-    for i, index in enumerate(frame_indices): 
+
+    for i, index in enumerate(frame_indices):
         if i == 0:
             axes[i][0].set_title('Original', fontsize=20)
             axes[i][1].set_title('Decompressed', fontsize=20)
@@ -226,16 +226,16 @@ def visualize_2d(image_original, image_recovered, frame_axis=0, max_frames=5, fi
         axes[i][1].imshow(image_recovered[index], cmap=cmap, interpolation='none')
     for ax in axes.flatten():
         ax.tick_params(axis='both', labelsize=12)
-    
+
     fig.text(0.5, 0, axis_labels[1], va='top', ha='center', fontsize=16)
     fig.text(0, 0.5, axis_labels[0], va='center', ha='right', rotation='vertical', fontsize=16)
     fig.tight_layout()
-    
+
     if save_fname is not None:
         fig.savefig(save_fname, transparent=False, bbox_inches='tight', dpi=300)
     plt.show()
     plt.close(fig)
-    
+
 
 def visualize_3d(image_original, image_recovered, figsize=(20, 10), vmax=8, permute=[0, 1, 2], save_fname=None):
     """
@@ -246,52 +246,52 @@ def visualize_3d(image_original, image_recovered, figsize=(20, 10), vmax=8, perm
     axis_scale = np.array([192, 249, 16 * 4])
     axis_labels = axis_labels[permute]
     axis_scale = axis_scale[permute]
-    
+
     for i, (image, title) in enumerate(zip([image_original, image_recovered], ['Original', 'Decompressed'])):
         image = image.permute(*permute)
         image = image.cpu().detach().numpy()
         image = np.log2(image + 1)
-    
+
         X, Y, Z = np.argwhere((image > 6)).T
         values = image[X, Y, Z]
         if vmax:
             values[values > vmax] = vmax
 
         ax = fig.add_subplot(121 + i, projection='3d')
-        # Don't use normalize, just set range manually. 
-        # It seems that it use up all memory. 
+        # Don't use normalize, just set range manually.
+        # It seems that it use up all memory.
         # normalize = matplotlib.colors.Normalize(vmin=6, vmax=8)
         ax.scatter3D(
-            X, Y, Z, 
-            c=values, 
+            X, Y, Z,
+            c=values,
             s=1,
-            cmap='Reds', 
+            cmap='Reds',
         )
         ax.set_box_aspect(tuple(axis_scale))
         ax.set_xlabel(axis_labels[0], fontsize=20)
         ax.set_ylabel(axis_labels[1], fontsize=20)
         ax.set_zlabel(axis_labels[2], fontsize=20)
         ax.set_title(title, fontsize=25)
-        
+
     fig.tight_layout()
     fig.subplots_adjust(wspace=.2)
-    
+
     if save_fname is not None:
         fig.savefig(save_fname, transparent=False, bbox_inches='tight', dpi=300)
     plt.show()
     plt.close(fig)
-    
-        
+
+
 def plot_mse(x, y_r, y_c, transform, thresholds=np.linspace(.1, .6, 51), save_fname=None, overall_only=False):
     """
     curve of overall MSE and MSE on non-zero values for various threshold
     """
-    
+
     X = x.cpu().detach().numpy().flatten()
-    
+
     OA, NZ = [], []
     for t in thresholds:
-        y = transform(y_r) * (y_c > t)    
+        y = transform(y_r) * (y_c > t)
         Y = y.cpu().detach().numpy().flatten()
 
         overall_mse = ((Y - X) ** 2).mean()
@@ -305,21 +305,21 @@ def plot_mse(x, y_r, y_c, transform, thresholds=np.linspace(.1, .6, 51), save_fn
     if overall_only == False:
         ax.plot(thresholds, NZ, label='non-zero')
     ax.legend(fontsize=16)
-    
+
     ax.set_xlabel('threshold', fontsize=16)
     ax.set_ylabel('mse', fontsize=16)
     ax.tick_params(axis='both', labelsize=12)
     plt.grid('True')
     plt.title('MSE', fontsize=18)
     fig.tight_layout()
-    
+
     if save_fname is not None:
         fig.savefig(save_fname, transparent=False, bbox_inches='tight', dpi=300)
     plt.show()
     plt.close(fig)
-    
+
     return pd.DataFrame(data={'threshold': thresholds, 'overall': OA, 'nonzero': NZ})
-    
+
 
 if __name__ == '__main__':
     print('This is main of visualzation')
